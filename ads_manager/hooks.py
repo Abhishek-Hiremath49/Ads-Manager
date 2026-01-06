@@ -1,14 +1,18 @@
 app_name = "ads_manager"
 app_title = "Ads Manager"
 app_publisher = "Abhishek"
-app_description = "Social Media Ads Scheduler and management"
+app_description = "Social Media Ads Scheduler and Management"
+app_icon = "octicon octicon-megaphone"
+app_color = "blue"
 app_email = "abhishekhiremath4949@gmail.com"
 app_license = "mit"
 
 # Apps
 # ------------------
 
-# required_apps = []
+required_apps = ["frappe"]
+
+after_install = "ads_manager.setup.install.after_install"
 
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
@@ -247,3 +251,31 @@ app_license = "mit"
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
 
+# Scheduled Tasks
+# scheduler_events = {
+#     "cron": {"*/5 * * * *": ["fb_ads_manager.api.scheduler.process_scheduled_ads"]},
+#     "daily": ["fb_ads_manager.api.scheduler.sync_ad_performance"],
+# }
+
+# # Document Events
+# doc_events = {
+#     "FB Ad Schedule": {
+#         "on_submit": "fb_ads_manager.fb_ads_manager.doctype.fb_ad_schedule.fb_ad_schedule.execute_schedule"
+#     }
+# }
+app_include_js = "/assets/ads_manager/js/ads_manager.js"
+scheduler_events = {
+    "cron": {
+        "* * * * *": [
+            "ads_manager.ads_manager.services.scheduler.launch_scheduled_campaigns"
+        ],  # Every min for launches
+        "0 0 * * *": [
+            "ads_manager.ads_manager.services.scheduler.reset_daily_ad_limits"
+        ],  # Daily reset
+    },
+    "hourly": [
+        "ads_manager.ads_manager.services.token_service.refresh_expiring_tokens",
+        "ads_manager.ads_manager.services.ad_analytics_service.fetch_hourly_performance",
+        "ads_manager.ads_manager.services.ad_analytics_service.sync_campaign_analytics",
+    ],
+}

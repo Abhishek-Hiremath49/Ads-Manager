@@ -1,0 +1,261 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-01-03 15:52:12.886087",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "creative_name",
+  "creative_type",
+  "column_break_main",
+  "platform_support",
+  "status",
+  "media_section",
+  "media_type",
+  "media",
+  "copy",
+  "headline",
+  "primary_text",
+  "column_break_copy",
+  "description",
+  "call_to_action",
+  "destination_url",
+  "instagram_section",
+  "optimize_for_instagram",
+  "instagram_hashtags",
+  "column_break_instagram",
+  "instagram_location_tag",
+  "instagram_profile_link",
+  "performance_section",
+  "impressions",
+  "clicks",
+  "spend",
+  "column_break_performance",
+  "ctr",
+  "cpc",
+  "engagement_rate",
+  "section_break_pbfi",
+  "platform_creative_id",
+  "column_break_quxl",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "creative_name",
+   "fieldtype": "Data",
+   "label": "Creative Name",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "creative_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Creative Type",
+   "options": "\nSingle Image\nSingle Video\nCarousel\nCollection\nInstagram Story\nInstagram Reel",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "platform_support",
+   "fieldtype": "Select",
+   "label": "Platform Support",
+   "options": "Facebook\nInstagram\nBoth"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nActive\nPaused",
+   "default": "Draft"
+  },
+  {
+   "fieldname": "media_section",
+   "fieldtype": "Section Break",
+   "label": "Media"
+  },
+  {
+   "fieldname": "media_type",
+   "fieldtype": "Select",
+   "label": "Media Type",
+   "options": "Image\nVideo\nText Only"
+  },
+  {
+   "fieldname": "media",
+   "fieldtype": "Attach Image",
+   "label": "Media File"
+  },
+  {
+   "fieldname": "copy",
+   "fieldtype": "Section Break",
+   "label": "Copy"
+  },
+  {
+   "fieldname": "headline",
+   "fieldtype": "Data",
+   "label": "Headline"
+  },
+  {
+   "fieldname": "primary_text",
+   "fieldtype": "Small Text",
+   "label": "Primary Text"
+  },
+  {
+   "fieldname": "column_break_copy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "label": "Description"
+  },
+  {
+   "fieldname": "call_to_action",
+   "fieldtype": "Select",
+   "label": "Call to Action",
+   "options": "Learn More\nShop Now\nSign Up"
+  },
+  {
+   "fieldname": "destination_url",
+   "fieldtype": "URL",
+   "label": "Destination URL"
+  },
+  {
+   "fieldname": "instagram_section",
+   "fieldtype": "Section Break",
+   "label": "Instagram Specific"
+  },
+  {
+   "fieldname": "optimize_for_instagram",
+   "fieldtype": "Check",
+   "label": "Optimize for Instagram"
+  },
+  {
+   "fieldname": "instagram_hashtags",
+   "fieldtype": "Text",
+   "label": "Instagram Hashtags"
+  },
+  {
+   "fieldname": "column_break_instagram",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "instagram_location_tag",
+   "fieldtype": "Data",
+   "label": "Instagram Location Tag"
+  },
+  {
+   "fieldname": "instagram_profile_link",
+   "fieldtype": "URL",
+   "label": "Instagram Profile Link"
+  },
+  {
+   "fieldname": "performance_section",
+   "fieldtype": "Section Break",
+   "label": "Performance"
+  },
+  {
+   "default": "0",
+   "fieldname": "impressions",
+   "fieldtype": "Int",
+   "label": "Impressions",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "clicks",
+   "fieldtype": "Int",
+   "label": "Clicks",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "spend",
+   "fieldtype": "Currency",
+   "label": "Spend",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_performance",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "ctr",
+   "fieldtype": "Percent",
+   "label": "CTR",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "cpc",
+   "fieldtype": "Currency",
+   "label": "CPC",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "engagement_rate",
+   "fieldtype": "Percent",
+   "label": "Engagement Rate",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_pbfi",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "platform_creative_id",
+   "fieldtype": "Data",
+   "label": "Platform Creative ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_quxl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Ad Creative",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-01-03 16:45:07.231473",
+ "modified_by": "Administrator",
+ "module": "Ads Manager",
+ "name": "Ad Creative",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "creative_name"
+}

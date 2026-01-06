@@ -1,0 +1,409 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-01-03 12:13:51.004969",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "campaign_name",
+  "platform",
+  "marketing_campaign",
+  "column_break_main",
+  "organization",
+  "ads_account",
+  "status",
+  "account_details_section",
+  "account_info_html",
+  "campaign_details_section",
+  "objective",
+  "buying_type",
+  "column_break_details",
+  "special_ad_category",
+  "bid_strategy",
+  "start_paused",
+  "platform_targeting_section",
+  "target_facebook",
+  "target_instagram",
+  "column_break_targeting",
+  "facebook_positions",
+  "instagram_positions",
+  "budget_section",
+  "budget_optimization",
+  "campaign_budget",
+  "column_break_budget",
+  "campaign_daily_budget",
+  "campaign_lifetime_budget",
+  "performance_section",
+  "total_spend",
+  "total_impressions",
+  "total_clicks",
+  "total_reach",
+  "column_break_performance",
+  "average_ctr",
+  "average_cpc",
+  "average_cpm",
+  "roas",
+  "platform_breakdown_section",
+  "facebook_spend",
+  "facebook_impressions",
+  "column_break_platform",
+  "instagram_spend",
+  "instagram_impressions",
+  "schedule_section",
+  "start_time",
+  "end_time",
+  "column_break_schedule",
+  "campaign_id",
+  "created_time",
+  "updated_time",
+  "section_break_cwnp",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "campaign_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Campaign Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "platform",
+   "fieldtype": "Select",
+   "label": "Platform",
+   "options": "Facebook\nInstagram\nBoth",
+   "reqd": 1
+  },
+  {
+   "fieldname": "marketing_campaign",
+   "fieldtype": "Link",
+   "label": "Marketing Campaign",
+   "options": "Marketing Campaign"
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "organization",
+   "fieldtype": "Link",
+   "label": "Organization",
+   "options": "Organization"
+  },
+  {
+   "fieldname": "ads_account",
+   "fieldtype": "Link",
+   "label": "Ads Account",
+   "options": "Ads Account Integration",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nActive\nPaused\nCompleted",
+   "reqd": 1,
+   "default": "Draft"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "account_details_section",
+   "fieldtype": "Section Break",
+   "label": "Account Details"
+  },
+  {
+   "fieldname": "account_info_html",
+   "fieldtype": "HTML",
+   "label": "Account Info",
+   "options": "<div>Account details will load here.</div>",
+   "read_only": 1
+  },
+  {
+   "fieldname": "campaign_details_section",
+   "fieldtype": "Section Break",
+   "label": "Campaign Details"
+  },
+  {
+   "fieldname": "objective",
+   "fieldtype": "Select",
+   "label": "Objective",
+   "options": "Awareness\nTraffic\nEngagement\nLeads\nSales",
+   "reqd": 1
+  },
+  {
+   "fieldname": "buying_type",
+   "fieldtype": "Select",
+   "label": "Buying Type",
+   "options": "Auction\nReach and Frequency",
+   "default": "Auction"
+  },
+  {
+   "fieldname": "column_break_details",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "special_ad_category",
+   "fieldtype": "Select",
+   "label": "Special Ad Category",
+   "options": "None\nHousing\nEmployment\nCredit"
+  },
+  {
+   "fieldname": "bid_strategy",
+   "fieldtype": "Select",
+   "label": "Bid Strategy",
+   "options": "Lowest Cost\nBid Cap\nCost Cap"
+  },
+  {
+   "fieldname": "start_paused",
+   "fieldtype": "Check",
+   "label": "Start Paused"
+  },
+  {
+   "fieldname": "platform_targeting_section",
+   "fieldtype": "Section Break",
+   "label": "Platform Targeting"
+  },
+  {
+   "fieldname": "target_facebook",
+   "fieldtype": "Check",
+   "label": "Target Facebook",
+   "default": 1
+  },
+  {
+   "fieldname": "target_instagram",
+   "fieldtype": "Check",
+   "label": "Target Instagram"
+  },
+  {
+   "fieldname": "column_break_targeting",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "facebook_positions",
+   "fieldtype": "Select",
+   "label": "Facebook Positions",
+   "options": "Feed\nStories\nReels\nIn-Stream Video"
+  },
+  {
+   "fieldname": "instagram_positions",
+   "fieldtype": "Select",
+   "label": "Instagram Positions",
+   "options": "Feed\nStories\nReels"
+  },
+  {
+   "fieldname": "budget_section",
+   "fieldtype": "Section Break",
+   "label": "Budget"
+  },
+  {
+   "fieldname": "budget_optimization",
+   "fieldtype": "Select",
+   "label": "Budget Optimization",
+   "options": "Campaign\nAd Set"
+  },
+  {
+   "fieldname": "campaign_budget",
+   "fieldtype": "Select",
+   "label": "Campaign Budget",
+   "options": "Daily\nLifetime"
+  },
+  {
+   "fieldname": "column_break_budget",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "campaign_daily_budget",
+   "fieldtype": "Currency",
+   "label": "Daily Budget"
+  },
+  {
+   "fieldname": "campaign_lifetime_budget",
+   "fieldtype": "Currency",
+   "label": "Lifetime Budget"
+  },
+  {
+   "fieldname": "performance_section",
+   "fieldtype": "Section Break",
+   "label": "Performance"
+  },
+  {
+   "default": "0",
+   "fieldname": "total_spend",
+   "fieldtype": "Currency",
+   "label": "Total Spend",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "total_impressions",
+   "fieldtype": "Int",
+   "label": "Total Impressions",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "total_clicks",
+   "fieldtype": "Int",
+   "label": "Total Clicks",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "total_reach",
+   "fieldtype": "Int",
+   "label": "Total Reach",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_performance",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "average_ctr",
+   "fieldtype": "Percent",
+   "label": "Average CTR",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "average_cpc",
+   "fieldtype": "Currency",
+   "label": "Average CPC",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "average_cpm",
+   "fieldtype": "Currency",
+   "label": "Average CPM",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "roas",
+   "fieldtype": "Float",
+   "label": "ROAS",
+   "read_only": 1
+  },
+  {
+   "fieldname": "platform_breakdown_section",
+   "fieldtype": "Section Break",
+   "label": "Platform Breakdown"
+  },
+  {
+   "default": "0",
+   "fieldname": "facebook_spend",
+   "fieldtype": "Currency",
+   "label": "Facebook Spend",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "facebook_impressions",
+   "fieldtype": "Int",
+   "label": "Facebook Impressions",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_platform",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "instagram_spend",
+   "fieldtype": "Currency",
+   "label": "Instagram Spend",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "instagram_impressions",
+   "fieldtype": "Int",
+   "label": "Instagram Impressions",
+   "read_only": 1
+  },
+  {
+   "fieldname": "schedule_section",
+   "fieldtype": "Section Break",
+   "label": "Schedule"
+  },
+  {
+   "fieldname": "start_time",
+   "fieldtype": "Datetime",
+   "label": "Start Time"
+  },
+  {
+   "fieldname": "end_time",
+   "fieldtype": "Datetime",
+   "label": "End Time"
+  },
+  {
+   "fieldname": "column_break_schedule",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "campaign_id",
+   "fieldtype": "Data",
+   "label": "Campaign ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "created_time",
+   "fieldtype": "Datetime",
+   "label": "Created Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "updated_time",
+   "fieldtype": "Datetime",
+   "label": "Updated Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_cwnp",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Ad Campaign",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-01-03 15:46:26.975420",
+ "modified_by": "Administrator",
+ "module": "Ads Manager",
+ "name": "Ad Campaign",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "campaign_name"
+}
