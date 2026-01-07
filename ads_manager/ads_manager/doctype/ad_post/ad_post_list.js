@@ -1,4 +1,4 @@
-frappe.listview_settings['Ad Campaign'] = {
+frappe.listview_settings['Ad Post'] = {
     add_fields: ['status'],
 
     get_indicator: function (doc) {
@@ -21,7 +21,7 @@ frappe.listview_settings['Ad Campaign'] = {
         listview.page.clear_primary_action();
         listview.page.set_primary_action(
             __('New Campaign'),
-            () => frappe.new_doc('Ad Campaign'),
+            () => frappe.new_doc('Ad Post'),
             'add'
         );
 
@@ -40,7 +40,7 @@ frappe.listview_settings['Ad Campaign'] = {
         listview.page.clear_primary_action();
         listview.page.set_primary_action(
             __('New Campaign'),
-            () => frappe.new_doc('Ad Campaign'),
+            () => frappe.new_doc('Ad Post'),
             'add'
         );
     }

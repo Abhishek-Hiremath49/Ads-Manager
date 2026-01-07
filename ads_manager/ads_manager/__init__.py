@@ -1,1 +1,2 @@
-__version__ = "0.0.1"
+# Ads Manager
+__version__ = "1.0.0"

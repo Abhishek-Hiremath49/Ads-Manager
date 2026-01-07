@@ -1,7 +1,7 @@
 // Copyright (c) 2026, Abhishek and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('Ad Campaign', {
+frappe.ui.form.on('Ad Post', {
     refresh: function (frm) {
         if (frm.is_new()) {
             $('.page-actions button.text-muted.btn.btn-default.icon-btn').hide();

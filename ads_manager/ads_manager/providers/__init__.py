@@ -3,9 +3,9 @@ Ad Providers
 """
 
 _PROVIDERS = {
-    "Facebook": "ads_manager.providers.meta_ads.MetaAdsProvider",
-    "Instagram": "ads_manager.providers.meta_ads.MetaAdsProvider",  # Unified
-    "Meta": "ads_manager.providers.meta_ads.MetaAdsProvider",
+    "Facebook": "ads_manager.ads_manager.providers.meta_ads.MetaAdsProvider",
+    "Instagram": "ads_manager.ads_manager.providers.meta_ads.MetaAdsProvider",
+    "Meta": "ads_manager.ads_manager.providers.meta_ads.MetaAdsProvider",
 }
 
 

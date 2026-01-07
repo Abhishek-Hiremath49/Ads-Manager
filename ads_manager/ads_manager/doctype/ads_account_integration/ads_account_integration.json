@@ -11,10 +11,11 @@
   "column_break_main",
   "platform",
   "organisation",
-  "connction_satus",
+  "connection_status",
   "enabled",
   "profile_section",
   "ad_account_id",
+  "ad_id",
   "account_type",
   "currency",
   "column_break_profile",
@@ -93,7 +94,7 @@
    "fieldname": "ad_account_id",
    "fieldtype": "Data",
    "label": "Ad Account ID",
-   "reqd": 1,
+   "no_copy": 1,
    "unique": 1
   },
   {
@@ -125,6 +126,7 @@
   {
    "fieldname": "account_status",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Account Status",
    "read_only": 1
   },
@@ -312,11 +314,17 @@
   },
   {
    "default": "Not Connected",
-   "fieldname": "connction_satus",
+   "fieldname": "connection_status",
    "fieldtype": "Select",
    "in_standard_filter": 1,
-   "label": "Connction Satus",
+   "label": "Connection Status",
    "options": "Not Connected\nConnected\nExpired\nError",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ad_id",
+   "fieldtype": "Data",
+   "label": "Ad ID",
    "read_only": 1
   }
  ],
@@ -324,11 +332,11 @@
  "index_web_pages_for_search": 1,
  "links": [
   {
-   "link_doctype": "Ad Campaign",
+   "link_doctype": "Ad Post",
    "link_fieldname": "ads_account"
   }
  ],
- "modified": "2026-01-06 13:47:14.410846",
+ "modified": "2026-01-07 15:42:03.559845",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ads Account Integration",

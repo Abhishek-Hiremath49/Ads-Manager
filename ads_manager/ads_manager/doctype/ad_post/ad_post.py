@@ -4,12 +4,12 @@
 import frappe
 from frappe.model.document import Document
 from frappe import _
-from ads_manager.services.campaign_service import CampaignService
+from ads_manager.ads_manager.services.ad_post_service import PostService
 
 # from ads_manager.utils.media import normalize_file_type  # Assume utils added
 
 
-class AdCampaign(Document):
+class AdPost(Document):
 
     VALID_TRANSITIONS = {
         "Draft": ["Scheduled", "Launching", "Cancelled"],
@@ -37,9 +37,7 @@ class AdCampaign(Document):
             frappe.throw(_("Budget is required for campaign optimization"))
 
     def validate(self):
-        if self.docstatus == 1 and self.status not in self.VALID_TRANSITIONS.get(
-            self.status, []
-        ):
+        if self.docstatus == 1 and self.status not in self.VALID_TRANSITIONS.get(self.status, []):
             frappe.throw(_("Invalid status transition"))
 
         if self.start_time and self.end_time and self.start_time > self.end_time:
@@ -68,7 +66,7 @@ class AdCampaign(Document):
     def on_submit(self):
         """Launch campaign on submit if scheduled"""
         if self.status == "Scheduled":
-            CampaignService.launch_campaign(self.name)
+            PostService.launch_campaign(self.name)
 
 
 @frappe.whitelist()

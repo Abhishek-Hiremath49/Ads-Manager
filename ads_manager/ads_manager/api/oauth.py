@@ -7,7 +7,9 @@ import frappe
 import secrets
 import requests
 from frappe import _
-from frappe.utils import get_url, now_datetime, add_to_date, quoted
+from frappe.utils import get_url, now_datetime, add_to_date
+from urllib.parse import quote as quoted
+from ads_manager.ads_manager.providers import get_provider
 
 
 # =============================================================================
@@ -48,7 +50,7 @@ def get_callback_url(platform: str) -> str:
 
 def _get_meta_auth_url(platform: str, settings, redirect_uri: str, state: str) -> str:
     """Generate Meta OAuth URL"""
-    if platform == "Facebook":
+    if platform in ["Facebook", "Instagram"]:
         scopes = [
             "pages_show_list",
             "pages_read_engagement",
@@ -69,8 +71,7 @@ def _get_meta_auth_url(platform: str, settings, redirect_uri: str, state: str) -
         }
         return f"https://www.facebook.com/v21.0/dialog/oauth?{'&'.join(f'{k}={quoted(str(v))}' for k, v in params.items())}"
 
-    # Add Instagram handling if needed
-    return None
+    frappe.throw(_(f"Unsupported platform: {platform}"))
 
 
 # =============================================================================
@@ -148,7 +149,7 @@ def callback_meta(platform: str = ""):
             f"https://graph.facebook.com/{api_version}/me/adaccounts",
             params={
                 "access_token": user_token,
-                "fields": "id,name,account_status,currency,timezone_name,amount_spent",
+                "fields": "id,name,account_status,currency,timezone_name,amount_spent,account_id",
             },
             timeout=30,
         )
@@ -184,9 +185,12 @@ def callback_meta(platform: str = ""):
         # If single account, connect directly
         if len(ad_accounts) == 1:
             frappe.set_user(cache_data["user"])
-            return _connect_ad_account(session_key, 0)
+            result = _connect_ad_account(session_key, 0)
+            frappe.local.response.update({"type": "redirect", "location": result})
+            return result
 
         # Multiple accounts - redirect to selection page
+        frappe.set_user(cache_data["user"])
         frappe.local.response.update(
             {
                 "type": "redirect",
@@ -228,6 +232,7 @@ def get_available_ad_accounts(session_key: str) -> dict:
                 "timezone": acct.get("timezone_name", "N/A"),
                 "status": acct.get("account_status", "N/A"),
                 "amount_spent": acct.get("amount_spent", "0"),
+                "ad_id": acct.get("account_id", "N/A"),
             }
         )
 
@@ -250,6 +255,11 @@ def _connect_ad_account(session_key: str, index: int):
     if not cache_data:
         frappe.throw(_("Session expired"))
 
+    # Ensure user context is set for permission checks
+    user = cache_data.get("user")
+    if user and frappe.session.user != user:
+        frappe.set_user(user)
+
     ad_accounts = cache_data.get("ad_accounts", [])
     if index >= len(ad_accounts):
         frappe.throw(_("Invalid account index"))
@@ -260,20 +270,24 @@ def _connect_ad_account(session_key: str, index: int):
     # Save integration
     integration = _save_ads_integration(
         platform=platform,
-        ad_account_id=acct.get("id"),
         account_name=cache_data.get("account_name") or acct.get("name"),
         account_description=cache_data.get("account_description"),
         organization=cache_data.get("organization"),
+        account_status=acct.get("account_status"),
+        access_token=cache_data["user_access_token"],
+        ad_account_id=acct.get("id"),
+        ad_id=acct.get("account_id"),
         currency=acct.get("currency"),
         timezone=acct.get("timezone_name"),
-        account_status=acct.get("account_status"),
         amount_spent=acct.get("amount_spent"),
-        access_token=cache_data["user_access_token"],
         expires_in=cache_data["expires_in"],
         auth_user_id=cache_data.get("auth_user_id"),
         auth_user_name=cache_data.get("auth_user_name"),
         auth_user_email=cache_data.get("ads_data", {}).get("email"),
     )
+
+    # Clean up session cache
+    frappe.cache().delete_value(f"meta_ads_{session_key}")
 
     return _oauth_success_redirect(integration.name)
 
@@ -281,6 +295,7 @@ def _connect_ad_account(session_key: str, index: int):
 def _save_ads_integration(
     platform: str,
     ad_account_id: str,
+    ad_id: str,
     account_name: str,
     access_token: str,
     expires_in: int = None,
@@ -307,6 +322,7 @@ def _save_ads_integration(
         integration = frappe.new_doc("Ads Account Integration")
         integration.platform = platform
         integration.ad_account_id = ad_account_id
+        integration.ad_id = ad_id
 
     integration.account_name = account_name
     integration.connection_status = "Connected"
@@ -345,6 +361,10 @@ def _save_ads_integration(
     integration.save(ignore_permissions=True)
     frappe.db.commit()
 
+    # Clear cache to ensure fresh data on redirect
+    frappe.cache().delete_value(f"meta_ads_{integration.name}")
+    frappe.clear_document_cache("Ads Account Integration", integration.name)
+
     return integration
 
 
@@ -352,7 +372,7 @@ def _save_ads_integration(
 def disconnect(integration: str) -> dict:
     """Disconnect an integration"""
     doc = frappe.get_doc("Ads Account Integration", integration)
-    doc.connection_status = "Disconnected"
+    doc.connection_status = "Not Connected"
     doc.access_token = None
     doc.refresh_token = None
     doc.page_access_token = None
@@ -370,14 +390,52 @@ def disconnect(integration: str) -> dict:
 def _oauth_error_redirect(message: str):
     """Redirect to error page"""
     frappe.local.response["type"] = "redirect"
-    frappe.local.response["location"] = (
-        f"/app/ads-account-integration?error={frappe.utils.quoted(message)}"
-    )
+    frappe.local.response["location"] = f"/app/ads-account-integration?error={quoted(message)}"
 
 
 def _oauth_success_redirect(integration_name: str):
     """Redirect to success page"""
+    location = f"/app/ads-account-integration/{integration_name}"
     frappe.local.response["type"] = "redirect"
-    frappe.local.response["location"] = (
-        f"/app/ads-account-integration/{integration_name}"
-    )
+    frappe.local.response["location"] = location
+    return location
+
+
+@frappe.whitelist()
+def validate_credentials(integration: str) -> dict:
+    """Validate integration credentials"""
+    try:
+        if not frappe.has_permission("Ads Account Integration", "read", integration):
+            frappe.throw("You don't have permission to access this integration")
+
+        integration_doc = frappe.get_doc("Ads Account Integration", integration)
+        provider = get_provider(integration_doc.platform)(integration)
+        result = provider.validate_connection()
+
+        return {
+            "success": result.get("success", False),
+            "message": result.get("message", "Connection validation failed"),
+        }
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Credential Validation Error")
+        return {"success": False, "error": str(e)}
+
+
+@frappe.whitelist()
+def sync_campaigns(integration: str) -> dict:
+    """Sync campaigns from platform"""
+    try:
+        if not frappe.has_permission("Ads Account Integration", "read", integration):
+            frappe.throw("You don't have permission to access this integration")
+
+        integration_doc = frappe.get_doc("Ads Account Integration", integration)
+        provider = get_provider(integration_doc.platform)(integration)
+        result = provider.sync_campaigns()
+
+        return {
+            "success": result.get("success", False),
+            "error_message": result.get("error_message", ""),
+        }
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Campaign Sync Error")
+        return {"success": False, "error_message": str(e)}

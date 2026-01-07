@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestAdCampaign(FrappeTestCase):
+class TestAdPost(FrappeTestCase):
 	pass

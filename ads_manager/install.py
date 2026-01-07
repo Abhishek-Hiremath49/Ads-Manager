@@ -9,6 +9,7 @@ def after_install():
     """Run after app installation"""
     create_default_settings()
     create_custom_fields()
+    print("Ads Manager installed succeefully")
     frappe.log_error("Ads Manager installed successfully!", "Installation Success")
 
 
@@ -23,4 +24,7 @@ def create_default_settings():
 def create_custom_fields():
     """Create any custom fields needed"""
     # Add to other DocTypes if needed (e.g., Marketing Campaign link)
+    pass
+
+def before_tests():
     pass

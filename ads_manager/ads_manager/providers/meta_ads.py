@@ -4,7 +4,7 @@ Meta Ads Provider - Direct calls to Meta Graph API (no SDK)
 
 import requests
 import frappe
-from typing import Dict, Any, Optional
+from typing import Dict
 from ads_manager.providers.base import (
     BaseProvider,
     LaunchResult,
