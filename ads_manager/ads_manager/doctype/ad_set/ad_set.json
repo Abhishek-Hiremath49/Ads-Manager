@@ -1,0 +1,90 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2026-01-07 20:45:11.610681",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_ksmk",
+  "name1",
+  "campagin",
+  "daily_budget",
+  "target",
+  "billing_event",
+  "status",
+  "bid_amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_ksmk",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "campagin",
+   "fieldtype": "Link",
+   "label": "Campagin",
+   "options": "Marketing Campaign"
+  },
+  {
+   "fieldname": "daily_budget",
+   "fieldtype": "Currency",
+   "label": "Daily Budget"
+  },
+  {
+   "fieldname": "target",
+   "fieldtype": "Data",
+   "label": "Target"
+  },
+  {
+   "fieldname": "billing_event",
+   "fieldtype": "Select",
+   "label": "Billing Event",
+   "options": "\nAPP_INSTALLS\nCLICKS, IMPRESSIONS\nLINK_CLICKS\nNONE\nOFFER_CLAIMS\nPAGE_LIKES\nPOST_ENGAGEMENT\nTHRUPLAY\nPURCHASE\nLISTING_INTERACTION"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "ACTIVE\nPAUSED\nDELETED\nARCHIVED"
+  },
+  {
+   "fieldname": "bid_amount",
+   "fieldtype": "Currency",
+   "label": "Bid Amount"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-07 21:46:36.850650",
+ "modified_by": "Administrator",
+ "module": "Ads Manager",
+ "name": "Ad Set",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

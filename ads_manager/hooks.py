@@ -263,4 +263,4 @@ scheduler_events = {
     # ],
 }
 
-after_migrate = ["ads_manager.custom_fields.execute"]
+after_migrate = ["ads_manager.custom_fields.custom_fields.execute"]

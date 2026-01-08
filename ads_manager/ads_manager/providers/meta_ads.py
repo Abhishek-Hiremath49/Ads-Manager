@@ -153,7 +153,8 @@ class MetaAdsProvider(BaseProvider):
         }
         try:
             return self._make_request("POST", endpoint, json_data=data)
-        except:
+        except Exception as e:
+            frappe.log_error(f"Failed to create AdSet: {str(e)}", "Meta Ads Provider")
             return {}
 
     def _create_ad(self, adset_id: str, creative_data: Dict) -> Dict:
@@ -167,7 +168,8 @@ class MetaAdsProvider(BaseProvider):
         }
         try:
             return self._make_request("POST", endpoint, json_data=data)
-        except:
+        except Exception as e:
+            frappe.log_error(f"Failed to create Ad: {str(e)}", "Meta Ads Provider")
             return {}
 
     def fetch_account_analytics(self) -> AnalyticsResult:
