@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"yU2F3tsCRv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Ads Scheduler</span>\",\"col\":12}},{\"id\":\"AAcr2A0ovS\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Ads Configuration\",\"col\":3}},{\"id\":\"galMEqd9Sc\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Ads Account Integration\",\"col\":3}}]",
+ "content": "[{\"id\":\"yU2F3tsCRv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Ads Scheduler</span>\",\"col\":12}},{\"id\":\"AAcr2A0ovS\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Ads Setting\",\"col\":3}},{\"id\":\"galMEqd9Sc\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Ads Account Integration\",\"col\":3}},{\"id\":\"QHkcfczMFg\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Marketing Campaign\",\"col\":3}},{\"id\":\"Kn412Ps-37\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Ad Set\",\"col\":3}},{\"id\":\"HBtYmzRazo\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Ad Post\",\"col\":3}},{\"id\":\"HAbziDmmE7\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Ad Creative\",\"col\":3}}]",
  "creation": "2026-01-02 09:47:10.529871",
  "custom_blocks": [],
  "docstatus": 0,
@@ -13,7 +13,7 @@
  "is_hidden": 0,
  "label": "Ads Scheduler",
  "links": [],
- "modified": "2026-01-06 13:32:13.795607",
+ "modified": "2026-01-08 12:05:31.245072",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ads Scheduler",
@@ -28,8 +28,16 @@
   {
    "color": "Grey",
    "doc_view": "List",
-   "label": "Ads Configuration",
+   "label": "Ads Setting",
    "link_to": "Ads Setting",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Marketing Campaign",
+   "link_to": "Marketing Campaign",
+   "stats_filter": "[]",
    "type": "DocType"
   },
   {
@@ -37,6 +45,30 @@
    "doc_view": "List",
    "label": "Ads Account Integration",
    "link_to": "Ads Account Integration",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Ad Set",
+   "link_to": "Ad Set",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Ad Post",
+   "link_to": "Ad Post",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Ad Creative",
+   "link_to": "Ad Creative",
    "stats_filter": "[]",
    "type": "DocType"
   }

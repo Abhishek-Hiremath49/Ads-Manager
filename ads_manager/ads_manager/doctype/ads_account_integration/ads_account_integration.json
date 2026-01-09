@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:ad_account_id",
+ "autoname": "format:{account_name}-{platform}-{ad_account_id}",
  "creation": "2026-01-03 11:19:54.606246",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -23,6 +23,8 @@
   "account_status",
   "balance",
   "amount_spent",
+  "section_break_wkub",
+  "fb_pages",
   "instagram_configuration_section",
   "instagram_business_account_id",
   "instagram_username",
@@ -94,7 +96,6 @@
    "fieldname": "ad_account_id",
    "fieldtype": "Data",
    "label": "Ad Account ID",
-   "no_copy": 1,
    "unique": 1
   },
   {
@@ -326,6 +327,18 @@
    "fieldtype": "Data",
    "label": "Ad ID",
    "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_wkub",
+   "fieldtype": "Section Break",
+   "label": "Facebook Pages"
+  },
+  {
+   "fieldname": "fb_pages",
+   "fieldtype": "Table",
+   "options": "Facebook Pages",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
@@ -336,11 +349,11 @@
    "link_fieldname": "ads_account"
   }
  ],
- "modified": "2026-01-07 15:42:03.559845",
+ "modified": "2026-01-08 18:10:59.478878",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ads Account Integration",
- "naming_rule": "By fieldname",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

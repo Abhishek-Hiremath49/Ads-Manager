@@ -1,18 +1,31 @@
 """
 Token Service - Handles OAuth token refresh for Ads
+Manages token lifecycle, validation, and automatic refresh
 """
 
 import frappe
 from frappe.utils import now_datetime, add_to_date
 from typing import Dict, Any
 from ads_manager.ads_manager.providers import get_provider
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class TokenService:
+    """Service for managing OAuth token refresh and validation"""
 
     @staticmethod
     def refresh_token(integration_name: str) -> Dict[str, Any]:
-        """Refresh OAuth token for an integration"""
+        """
+        Refresh OAuth token for an integration
+        
+        Args:
+            integration_name: Name of Ads Account Integration document
+            
+        Returns:
+            Dictionary with success status and error message if failed
+        """
         try:
             integration = frappe.get_doc("Ads Account Integration", integration_name)
 
@@ -41,6 +54,7 @@ class TokenService:
                 frappe.log_error(
                     f"Token refreshed for {integration_name}", "Token Refresh Success"
                 )
+                logger.info(f"Token successfully refreshed for {integration_name}")
                 return {"success": True}
             else:
                 integration.connection_status = "Expired"
@@ -53,15 +67,25 @@ class TokenService:
                     f"Token refresh failed: {result.error_message}",
                     "Token Refresh Failed",
                 )
+                logger.warning(f"Token refresh failed for {integration_name}: {result.error_message}")
                 return {"success": False, "error_message": result.error_message}
 
         except Exception as e:
+            logger.error(f"Token refresh error for {integration_name}: {str(e)}")
             frappe.log_error(frappe.get_traceback(), "Token Refresh Error")
             return {"success": False, "error_message": str(e)}
 
     @staticmethod
     def check_token_validity(integration_name: str) -> Dict[str, Any]:
-        """Check if token is valid and not expired"""
+        """
+        Check if token is valid and not expired
+        
+        Args:
+            integration_name: Name of Ads Account Integration document
+            
+        Returns:
+            Dictionary with valid flag and reason if invalid
+        """
         try:
             integration = frappe.get_doc("Ads Account Integration", integration_name)
 
@@ -78,14 +102,19 @@ class TokenService:
             return {"valid": True}
 
         except frappe.DoesNotExistError:
+            logger.debug(f"Integration not found: {integration_name}")
             return {"valid": False, "reason": "Integration not found"}
         except Exception as e:
+            logger.error(f"Token validity check error for {integration_name}: {str(e)}")
             frappe.log_error(frappe.get_traceback(), "Token Validity Check Error")
             return {"valid": False, "reason": str(e)}
 
     @staticmethod
     def refresh_expiring_tokens():
-        """Scheduled: Refresh all expiring tokens"""
+        """
+        Scheduled: Refresh all expiring tokens
+        This should be called periodically (hourly or daily) to ensure tokens don't expire
+        """
         try:
             integrations = frappe.get_all(
                 "Ads Account Integration",

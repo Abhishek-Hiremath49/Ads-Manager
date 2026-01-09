@@ -30,7 +30,7 @@ after_install = "ads_manager.install.after_install"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/ads_manager/css/ads_manager.css"
-app_include_js = "/assets/ads_manager/js/ads_manager.js"
+# app_include_js = "/assets/ads_manager/js/ads_manager.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/ads_manager/css/ads_manager.css"
@@ -251,16 +251,17 @@ app_include_js = "/assets/ads_manager/js/ads_manager.js"
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
 
-scheduler_events = {
-    "cron": {
-        "* * * * *": ["ads_manager.ads_manager.services.scheduler.launch_scheduled_campaigns"],
-        "0 0 * * *": ["ads_manager.ads_manager.services.scheduler.reset_daily_ad_limits"],
-    },
-    # "hourly": [
-    #     "ads_manager.ads_manager.services.ad_token_service.refresh_expiring_tokens",
-    #     "ads_manager.ads_manager.services.ad_analytics_service.fetch_hourly_performance",
-    #     "ads_manager.ads_manager.services.ad_analytics_service.sync_campaign_analytics",
-    # ],
-}
+# scheduler_events = {
+#     "cron": {
+#         "* * * * *": ["ads_manager.ads_manager.services.scheduler.launch_scheduled_campaigns"],
+#         "0 0 * * *": ["ads_manager.ads_manager.services.scheduler.reset_daily_ad_limits"],
+#     },
+#     "hourly": [
+#         "ads_manager.ads_manager.services.ad_token_service.refresh_expiring_tokens",
+#         "ads_manager.ads_manager.services.ad_analytics_service.fetch_hourly_performance",
+#         "ads_manager.ads_manager.services.ad_analytics_service.sync_campaign_analytics",
+#     ],
+# }
 
-after_migrate = ["ads_manager.custom_fields.custom_fields.execute"]
+after_migrate = ["ads_manager.ads_manager.custom.custom_fields.execute"]
+after_install = ["ads_manager.ads_manager.setup.server_scripts.create_server_scripts"]

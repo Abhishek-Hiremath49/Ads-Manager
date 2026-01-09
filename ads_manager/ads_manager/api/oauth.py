@@ -114,6 +114,22 @@ def _validate_settings() -> dict:
 
     return settings
 
+def _get_user_pages(access_token: str) -> list:
+    """Fetch user's managed Facebook pages using the user access token"""
+    settings = frappe.get_single("Ads Setting")
+    api_version = settings.facebook_api_version or "v21.0"
+    endpoint = f"https://graph.facebook.com/{api_version}/me/accounts"
+    params = {
+        "access_token": access_token,
+        "fields": "id,name,access_token,picture{url}"
+    }
+    try:
+        response = _make_request("GET", endpoint, params=params)
+        data = response.json()
+        return data.get("data", [])
+    except Exception as e:
+        logger.warning(f"Failed to fetch user pages: {str(e)}")
+        return []
 
 # ======================================================================
 # OAuth Initiation
@@ -212,6 +228,10 @@ def _get_meta_auth_url(platform: str, settings, redirect_uri: str, state: str) -
             "ads_management",
             "ads_read",
         ]
+        
+        if platform == "Instagram":
+            scopes.extend(["instagram_basic", "instagram_manage_insights"])
+            
         params = {
             "client_id": settings.facebook_app_id,
             "redirect_uri": redirect_uri,
@@ -325,8 +345,9 @@ def callback_meta(platform: str = "") -> str:
             try:
                 frappe.set_user(cache_data["user"])
                 result = _connect_ad_account(session_key, 0)
-                frappe.local.response.update({"type": "redirect", "location": result})
-                return result
+                location = _oauth_success_redirect(result.name)
+                frappe.local.response.update({"type": "redirect", "location": location})
+                return location
             except Exception as e:
                 logger.error(f"Failed to auto-connect single account: {str(e)}")
                 return _oauth_error_redirect("Failed to connect account automatically")
@@ -636,6 +657,7 @@ def _connect_ad_account(session_key: str, index: int):
         auth_user_id=cache_data.get("auth_user_id"),
         auth_user_name=cache_data.get("auth_user_name"),
         auth_user_email=cache_data.get("ads_data", {}).get("email"),
+        long_lived_token=cache_data["user_access_token"],
     )
 
     # Clean up session cache
@@ -661,6 +683,7 @@ def _save_ads_integration(
     auth_user_id: str = None,
     auth_user_name: str = None,
     auth_user_email: str = None,
+    long_lived_token: str = None,
 ) -> dict:
     """
     Create or update Ads Account Integration document.
@@ -687,7 +710,7 @@ def _save_ads_integration(
         Integration document
     """
     try:
-        # Check for existing integration
+        # Check if integration already exists
         existing = frappe.db.get_value(
             "Ads Account Integration",
             {"platform": platform, "ad_account_id": ad_account_id},
@@ -703,14 +726,13 @@ def _save_ads_integration(
             integration.ad_id = ad_id
             is_new = True
 
-        # Update integration details
+        # Update main fields
         integration.account_name = account_name
         integration.connection_status = "Connected"
         integration.enabled = 1
         integration.last_error = None
         integration.authorization_date = now_datetime()
 
-        # Set optional fields
         if account_description:
             integration.account_description = account_description
         if organization:
@@ -724,14 +746,14 @@ def _save_ads_integration(
         if amount_spent is not None:
             integration.amount_spent = float(amount_spent)
 
-        # Set OAuth tokens
+        # OAuth tokens
         integration.access_token = access_token
         if refresh_token:
             integration.refresh_token = refresh_token
         if expires_in:
             integration.token_expiry = add_to_date(now_datetime(), seconds=expires_in)
 
-        # Set authorized user information
+        # Authorized user info
         if auth_user_id:
             integration.authorized_user_id = auth_user_id
         if auth_user_name:
@@ -739,12 +761,24 @@ def _save_ads_integration(
         if auth_user_email:
             integration.authorized_user_email = auth_user_email
 
-        # Save document
+        # === FETCH AND STORE FACEBOOK PAGES (using integration only) ===
+        if long_lived_token:
+            pages = _get_user_pages(long_lived_token)
+            # Clear existing pages to avoid duplicates on reconnect
+            integration.fb_pages = []
+            for page in pages:
+                picture_url = f"https://graph.facebook.com/{page.get('id')}/picture?type=square&height=100&width=100"
+                integration.append("fb_pages", {
+                    "page_name": page.get("name"),
+                    "page_id": page.get("id"),
+                    "image": picture_url
+                })
+
+        # Save everything (main doc + child table)
         integration.save(ignore_permissions=True)
         frappe.db.commit()
 
-        # Clear caches
-        frappe.cache().delete_value(f"meta_ads_{integration.name}")
+        # Clear cache
         frappe.clear_document_cache("Ads Account Integration", integration.name)
 
         action = "created" if is_new else "updated"

@@ -2,11 +2,19 @@
 Campaign Service - Handles ad campaign launching workflow
 """
 
+"""
+Post Service - Handles ad campaign launching workflow
+Manages campaign publication, validation, and status tracking
+"""
+
 import frappe
 from typing import Dict, Any
 from ads_manager.ads_manager.providers import get_provider
 from ads_manager.ads_manager.providers.base import PublishResult
 from frappe.utils import now_datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def validate_media(media_files):
@@ -23,11 +31,20 @@ def validate_media(media_files):
 
 
 class PostService:
+    """Service for managing ad campaign publication and lifecycle"""
     MAX_RETRIES = 3
 
     @staticmethod
     def launch_campaign(campaign_name: str) -> PublishResult:
-        """Launch/schedule ad campaign"""
+        """
+        Launch/schedule ad campaign to ad platform
+        
+        Args:
+            campaign_name: Name of the Ad Campaign document
+            
+        Returns:
+            PublishResult object with success status and details
+        """
         try:
             campaign = frappe.get_doc("Ad Campaign", campaign_name)
 
@@ -58,9 +75,12 @@ class PostService:
             try:
                 provider = get_provider(integration.platform)(integration.name)
             except Exception as e:
+                error_msg = f"Failed to initialize provider: {str(e)}"
+                logger.error(error_msg)
+                frappe.log_error(error_msg, "Provider Initialization Error")
                 return PublishResult(
                     success=False,
-                    error_message=f"Failed to initialize provider: {str(e)}",
+                    error_message=error_msg,
                 )
 
             # Validate required fields
@@ -96,7 +116,7 @@ class PostService:
             }
 
             # Launch campaign
-            result = provider.launch_campaign(payload)
+            result = provider.publish_post(payload)
 
             if result.success:
                 campaign.status = "Active"

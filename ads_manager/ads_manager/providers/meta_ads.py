@@ -1,16 +1,24 @@
 """
 Meta Ads Provider - Direct calls to Meta Graph API (no SDK)
+Handles Facebook and Instagram ad operations through Meta Graph API
 """
 
 import requests
 import frappe
 from typing import Dict
-from ads_manager.providers.base import (
+from ads_manager.ads_manager.providers.base import (
     BaseProvider,
-    LaunchResult,
+    PublishResult,
     AnalyticsResult,
     TokenRefreshResult,
 )
+import logging
+
+logger = logging.getLogger(__name__)
+
+# API request timeouts and retry settings
+REQUEST_TIMEOUT = 30
+MAX_RETRIES = 3
 
 
 class MetaAdsProvider(BaseProvider):
@@ -21,13 +29,30 @@ class MetaAdsProvider(BaseProvider):
     DAILY_API_LIMIT = 200
 
     def __init__(self, integration_name: str = None):
+        """
+        Initialize Meta provider
+        
+        Args:
+            integration_name: Name of Ads Account Integration document
+            
+        Raises:
+            ValueError: If access token is not available
+        """
         super().__init__(integration_name)
-        self.integration = frappe.get_doc("Ads Account Integration", integration_name)
-        self.base_url = f"https://graph.facebook.com/{self.integration.facebook_api_version or 'v21.0'}"
-        self.access_token = self.integration.get_access_token()
-        self.account_id = self.integration.ad_account_id
-        if not self.access_token:
-            raise ValueError("Access token required")
+        try:
+            self.integration = frappe.get_doc("Ads Account Integration", integration_name)
+            self.base_url = f"https://graph.facebook.com/{self.integration.facebook_api_version or 'v21.0'}"
+            self.access_token = self.integration.get_access_token()
+            self.account_id = self.integration.ad_account_id
+            if not self.access_token:
+                logger.error(f"No access token found for {integration_name}")
+                raise ValueError("Access token required")
+        except frappe.DoesNotExistError:
+            logger.error(f"Integration not found: {integration_name}")
+            raise
+        except AttributeError as e:
+            logger.error(f"Invalid integration configuration: {str(e)}")
+            raise
 
     def _make_request(
         self,
@@ -37,7 +62,22 @@ class MetaAdsProvider(BaseProvider):
         json_data: Dict = None,
         headers: Dict = None,
     ) -> Dict:
-        """Helper for API requests with auth and error handling"""
+        """
+        Helper for API requests with auth and error handling
+        
+        Args:
+            method: HTTP method (GET, POST, etc.)
+            endpoint: API endpoint path
+            params: Query parameters
+            json_data: JSON request body
+            headers: Custom headers
+            
+        Returns:
+            Parsed JSON response
+            
+        Raises:
+            requests.RequestException: If request fails
+        """
         url = f"{self.base_url}/{endpoint}"
         default_headers = {
             "Content-Type": "application/json",
@@ -46,7 +86,7 @@ class MetaAdsProvider(BaseProvider):
             default_headers.update(headers)
 
         # For GET, use params; for POST, use json
-        kwargs = {"headers": default_headers}
+        kwargs = {"headers": default_headers, "timeout": REQUEST_TIMEOUT}
         if method.upper() == "GET":
             kwargs["params"] = params or {}
             kwargs["params"]["access_token"] = self.access_token
@@ -59,21 +99,37 @@ class MetaAdsProvider(BaseProvider):
             response.raise_for_status()
             data = response.json()
             if "error" in data:
-                raise ValueError(data["error"].get("message", "API Error"))
+                error_msg = data["error"].get("message", "API Error")
+                logger.warning(f"Meta API error: {error_msg} (Endpoint: {endpoint})")
+                raise ValueError(error_msg)
             self.increment_rate_limit()
             return data
+        except requests.Timeout as e:
+            error_msg = f"Request timeout to {endpoint}"
+            logger.error(error_msg)
+            frappe.log_error(f"Meta API timeout: {str(e)}", "Meta Ads API Error")
+            raise
         except requests.RequestException as e:
             error_msg = str(
                 e.response.json() if e.response and e.response.content else e
             )
+            logger.error(f"Meta API request failed: {error_msg} | Endpoint: {endpoint}")
             frappe.log_error(
                 f"Meta API request failed: {error_msg} | Endpoint: {endpoint}",
                 "Meta Ads API Error",
             )
             raise
 
-    def launch_campaign(self, payload: Dict) -> LaunchResult:
-        """Create a campaign via direct API POST"""
+    def publish_post(self, payload: Dict) -> PublishResult:
+        """
+        Create a campaign via direct API POST
+        
+        Args:
+            payload: Campaign configuration dictionary
+            
+        Returns:
+            PublishResult with campaign details or error information
+        """
         endpoint = f"{self.account_id}/campaigns"
         data = {
             "name": payload.get("name", "New Campaign"),
@@ -119,23 +175,35 @@ class MetaAdsProvider(BaseProvider):
                 frappe.log_error(
                     f"Campaign launched: {result_data['id']}", "Ad Launch Success"
                 )
-                return LaunchResult(
+                return PublishResult(
                     success=True,
                     campaign_id=result_data["id"],
                     raw_response=result_data,
                 )
             else:
-                return LaunchResult(
+                return PublishResult(
                     success=False,
                     error_message=result_data.get("error", {}).get(
                         "message", "Launch failed"
                     ),
                 )
         except Exception as e:
-            return LaunchResult(success=False, error_message=str(e))
+            error_msg = f"Campaign publication failed: {str(e)}"
+            logger.error(error_msg)
+            frappe.log_error(error_msg, "Campaign Publication Error")
+            return PublishResult(success=False, error_message=error_msg)
 
     def _create_adset(self, campaign_id: str, payload: Dict) -> Dict:
-        """Helper: Create AdSet under campaign"""
+        """
+        Helper: Create AdSet under campaign
+        
+        Args:
+            campaign_id: Parent campaign ID
+            payload: AdSet configuration
+            
+        Returns:
+            API response with AdSet details
+        """
         endpoint = f"{campaign_id}/adsets"
         data = {
             "name": f"{payload.get('name')}-AdSet",
@@ -158,7 +226,16 @@ class MetaAdsProvider(BaseProvider):
             return {}
 
     def _create_ad(self, adset_id: str, creative_data: Dict) -> Dict:
-        """Helper: Create Ad under AdSet"""
+        """
+        Helper: Create Ad under AdSet
+        
+        Args:
+            adset_id: Parent adset ID
+            creative_data: Creative configuration
+            
+        Returns:
+            API response with Ad details
+        """
         endpoint = f"{adset_id}/ads"
         data = {
             "name": "New Ad",
@@ -173,7 +250,13 @@ class MetaAdsProvider(BaseProvider):
             return {}
 
     def fetch_account_analytics(self) -> AnalyticsResult:
-        """Get account-level insights via GET"""
+        """
+        Get account-level insights via GET
+        Fetches aggregated analytics for the entire ad account
+        
+        Returns:
+            AnalyticsResult with metrics dictionary or error
+        """
         endpoint = f"{self.account_id}/insights"
         params = {
             "fields": "impressions,spend,clicks,ctr,reach,cpm,cpc",
@@ -218,8 +301,17 @@ class MetaAdsProvider(BaseProvider):
             )
             return AnalyticsResult(success=False, error_message=str(e))
 
-    def fetch_campaign_analytics(self, campaign_id: str) -> AnalyticsResult:
-        """Get campaign-level insights"""
+    def fetch_post_analytics(self, campaign_id: str) -> AnalyticsResult:
+        """
+        Get campaign-level insights
+        Fetches analytics for a specific campaign
+        
+        Args:
+            campaign_id: Campaign ID to fetch analytics for
+            
+        Returns:
+            AnalyticsResult with campaign metrics or error
+        """
         endpoint = f"{campaign_id}/insights"
         params = {
             "fields": "impressions,spend,clicks,ctr",
@@ -251,7 +343,15 @@ class MetaAdsProvider(BaseProvider):
             return AnalyticsResult(success=False, error_message=str(e))
 
     def refresh_token(self, integration_name: str = None) -> TokenRefreshResult:
-        """Exchange short-lived token for long-lived (up to 60 days)"""
+        """
+        Exchange short-lived token for long-lived (up to 60 days)
+        
+        Args:
+            integration_name: Integration name (optional)
+            
+        Returns:
+            TokenRefreshResult with new access token or error
+        """
         settings = frappe.get_single("Ads Setting")
         endpoint = "oauth/access_token"
         params = {
@@ -282,11 +382,22 @@ class MetaAdsProvider(BaseProvider):
             return TokenRefreshResult(success=False, error_message=str(e))
 
     def get_daily_limit(self) -> int:
-        """Daily API call limit (Meta's is ~200 for most apps)"""
+        """
+        Daily API call limit (Meta's is ~200 for most apps)
+        
+        Returns:
+            Maximum number of API calls allowed per day
+        """
         return self.DAILY_API_LIMIT
 
     def validate_credentials(self) -> Dict:
-        """Test connection with simple GET to ad account"""
+        """
+        Test connection with simple GET to ad account
+        Validates that credentials are valid by making a test API call
+        
+        Returns:
+            Dictionary with success status and account name if successful
+        """
         try:
             endpoint = self.account_id
             params = {"fields": "name,account_status"}
