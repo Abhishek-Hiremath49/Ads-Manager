@@ -52,6 +52,7 @@ after_install = "ads_manager.install.after_install"
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
+
 # Svg Icons
 # ------------------
 # include app icons in desk
@@ -148,6 +149,8 @@ after_install = "ads_manager.install.after_install"
 # 		"on_trash": "method"
 # 	}
 # }
+
+
 
 # Scheduled Tasks
 # ---------------
@@ -262,6 +265,3 @@ after_install = "ads_manager.install.after_install"
 #         "ads_manager.ads_manager.services.ad_analytics_service.sync_campaign_analytics",
 #     ],
 # }
-
-after_migrate = ["ads_manager.ads_manager.custom.custom_fields.execute"]
-after_install = ["ads_manager.ads_manager.setup.server_scripts.create_server_scripts"]

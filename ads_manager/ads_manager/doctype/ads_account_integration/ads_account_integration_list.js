@@ -19,11 +19,7 @@ frappe.listview_settings['Ads Account Integration'] = {
     onload(listview) {
         listview.page.clear_primary_action();
 
-        listview.page.set_primary_action(
-            __('Connect Account'),
-            () => show_connect_dialog(),
-            'add'
-        );
+        listview.page.set_primary_action(__('Connect Account'), () => show_connect_dialog(), 'add');
 
         listview.page.add_action_item(__('Disconnect Selected'), () => {
             const selected = listview.get_checked_items();
@@ -133,7 +129,6 @@ function connect_platform(data) {
         freeze: true,
         freeze_message: __('Redirecting to {0}...', [data.platform]),
         callback(r) {
-            // ✅ CORRECT KEY
             if (r.message && r.message.authorization_url) {
                 window.location.href = r.message.authorization_url;
             } else {

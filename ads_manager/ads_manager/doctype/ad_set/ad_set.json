@@ -8,12 +8,13 @@
  "field_order": [
   "section_break_ksmk",
   "name1",
-  "campagin",
+  "campaign",
   "daily_budget",
   "target",
   "billing_event",
   "status",
-  "bid_amount"
+  "bid_amount",
+  "adset_id"
  ],
  "fields": [
   {
@@ -24,12 +25,6 @@
    "fieldname": "name1",
    "fieldtype": "Data",
    "label": "Name"
-  },
-  {
-   "fieldname": "campagin",
-   "fieldtype": "Link",
-   "label": "Campagin",
-   "options": "Marketing Campaign"
   },
   {
    "fieldname": "daily_budget",
@@ -45,7 +40,7 @@
    "fieldname": "billing_event",
    "fieldtype": "Select",
    "label": "Billing Event",
-   "options": "\nAPP_INSTALLS\nCLICKS, IMPRESSIONS\nLINK_CLICKS\nNONE\nOFFER_CLAIMS\nPAGE_LIKES\nPOST_ENGAGEMENT\nTHRUPLAY\nPURCHASE\nLISTING_INTERACTION"
+   "options": "\nAPP_INSTALLS\nCLICKS\nIMPRESSIONS\nLINK_CLICKS\nNONE\nOFFER_CLAIMS\nPAGE_LIKES\nPOST_ENGAGEMENT\nTHRUPLAY\nPURCHASE\nLISTING_INTERACTION"
   },
   {
    "fieldname": "status",
@@ -57,12 +52,24 @@
    "fieldname": "bid_amount",
    "fieldtype": "Currency",
    "label": "Bid Amount"
+  },
+  {
+   "fieldname": "adset_id",
+   "fieldtype": "Data",
+   "label": "Adset ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Link",
+   "label": "Campaign",
+   "options": "Ads Campaign"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-07 21:46:36.850650",
+ "modified": "2026-01-12 14:49:09.199350",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ad Set",

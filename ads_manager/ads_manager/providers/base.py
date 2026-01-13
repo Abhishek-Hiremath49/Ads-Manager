@@ -54,7 +54,7 @@ class BaseProvider(ABC):
     def __init__(self, integration_name: str = None):
         """
         Initialize provider with integration settings
-        
+
         Args:
             integration_name: Name of Ads Account Integration document
         """
@@ -63,9 +63,7 @@ class BaseProvider(ABC):
         self.integration_name = integration_name
         if integration_name:
             try:
-                self.integration = frappe.get_doc(
-                    "Ads Account Integration", integration_name
-                )
+                self.integration = frappe.get_doc("Ads Account Integration", integration_name)
             except frappe.DoesNotExistError:
                 logger.error(f"Integration not found: {integration_name}")
                 frappe.throw(f"Integration not found: {integration_name}")
@@ -73,10 +71,10 @@ class BaseProvider(ABC):
     def get_integration_doc(self, integration_name: str = None):
         """
         Get integration document
-        
+
         Args:
             integration_name: Name of integration (uses stored name if not provided)
-            
+
         Returns:
             Ads Account Integration document
         """
@@ -90,7 +88,7 @@ class BaseProvider(ABC):
             frappe.throw(f"Integration not found: {name}")
 
     @abstractmethod
-    def publish_post(self, payload: Dict) -> PublishResult:
+    def create_campaign(self, payload: Dict) -> PublishResult:
         """Publish/launch a post or campaign to the platform"""
         pass
 
@@ -112,16 +110,14 @@ class BaseProvider(ABC):
     def refresh_token(self, integration_name: str = None) -> TokenRefreshResult:
         """
         Refresh OAuth token
-        
+
         Args:
             integration_name: Name of integration to refresh token for
-            
+
         Returns:
             TokenRefreshResult with new tokens if successful
         """
-        return TokenRefreshResult(
-            success=False, error_message="Token refresh not supported"
-        )
+        return TokenRefreshResult(success=False, error_message="Token refresh not supported")
 
     def increment_rate_limit(self):
         """Increment API call counter for rate limiting"""
@@ -132,7 +128,7 @@ class BaseProvider(ABC):
     def check_rate_limit(self) -> bool:
         """
         Check if under rate limit
-        
+
         Returns:
             True if API calls are under the daily limit, False otherwise
         """

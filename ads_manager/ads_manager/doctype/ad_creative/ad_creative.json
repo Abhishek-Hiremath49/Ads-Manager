@@ -7,13 +7,16 @@
  "field_order": [
   "section_break_bdvd",
   "name1",
+  "account",
+  "creative_type",
   "description",
   "caption",
   "message",
   "link",
   "call_to_action",
   "page",
-  "image"
+  "media",
+  "creative_id"
  ],
  "fields": [
   {
@@ -23,7 +26,7 @@
   {
    "fieldname": "name1",
    "fieldtype": "Data",
-   "label": "Name"
+   "label": "Creative Name"
   },
   {
    "fieldname": "description",
@@ -37,7 +40,7 @@
   },
   {
    "fieldname": "message",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Message"
   },
   {
@@ -48,24 +51,43 @@
   {
    "fieldname": "call_to_action",
    "fieldtype": "Select",
-   "label": "Call To Action"
+   "label": "Call To Action",
+   "options": "Learn More\nShop Now\nSign Up"
   },
   {
    "fieldname": "page",
-   "fieldtype": "Link",
-   "label": "Page",
-   "options": "Facebook Pages"
+   "fieldtype": "Select",
+   "label": "Page"
   },
   {
-   "fieldname": "image",
-   "fieldtype": "Attach",
-   "label": "Image"
+   "fieldname": "media",
+   "fieldtype": "Table",
+   "label": "Media",
+   "options": "Ad Media"
+  },
+  {
+   "fieldname": "account",
+   "fieldtype": "Link",
+   "label": "Account",
+   "options": "Ads Account Integration"
+  },
+  {
+   "fieldname": "creative_type",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Creative Type"
+  },
+  {
+   "fieldname": "creative_id",
+   "fieldtype": "Data",
+   "label": "Creative ID",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-08 14:02:36.713321",
+ "modified": "2026-01-12 20:28:39.350663",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ad Creative",

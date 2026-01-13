@@ -9,20 +9,26 @@
   "account_name",
   "account_description",
   "column_break_main",
+  "enabled",
   "platform",
   "organisation",
   "connection_status",
-  "enabled",
+  "profile_image",
   "profile_section",
   "ad_account_id",
-  "ad_id",
   "account_type",
   "currency",
   "column_break_profile",
-  "timezone",
+  "ad_id",
   "account_status",
   "balance",
   "amount_spent",
+  "authorized_user_section",
+  "authorized_user_id",
+  "authorized_user_name",
+  "column_break_zdpd",
+  "authorized_user_email",
+  "authorization_date",
   "section_break_wkub",
   "fb_pages",
   "instagram_configuration_section",
@@ -31,18 +37,14 @@
   "column_break_instagram",
   "facebook_page_id",
   "facebook_page_name",
-  "authorized_user_section",
-  "authorized_user_id",
-  "authorized_user_name",
-  "column_break_zdpd",
-  "authorized_user_email",
-  "authorization_date",
   "oauth_section",
   "access_token",
   "token_expiry",
+  "oauth_10a_token",
   "column_break_oauth",
   "refresh_token",
   "page_access_token",
+  "oauth_10a_secret",
   "sync_settings_section",
   "auto_sync",
   "sync_frequency",
@@ -81,7 +83,7 @@
    "reqd": 1
   },
   {
-   "default": "1",
+   "default": "0",
    "fieldname": "enabled",
    "fieldtype": "Check",
    "label": "Enabled"
@@ -92,18 +94,11 @@
    "label": "Ad Account Information"
   },
   {
-   "description": "Format: act_xxxxxxxxxxxxx",
-   "fieldname": "ad_account_id",
-   "fieldtype": "Data",
-   "label": "Ad Account ID",
-   "unique": 1
-  },
-  {
    "default": "Business",
    "fieldname": "account_type",
    "fieldtype": "Select",
    "label": "Account Type",
-   "options": "Personal\nBusiness\nAgency",
+   "options": "Personal\nBusiness\nAgency\nPage\nOrganization\nChannel",
    "read_only": 1
   },
   {
@@ -117,12 +112,6 @@
   {
    "fieldname": "column_break_profile",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "timezone",
-   "fieldtype": "Data",
-   "label": "Timezone",
-   "read_only": 1
   },
   {
    "fieldname": "account_status",
@@ -225,8 +214,7 @@
   {
    "fieldname": "access_token",
    "fieldtype": "Password",
-   "label": "Access Token",
-   "read_only": 1
+   "label": "Access Token"
   },
   {
    "fieldname": "token_expiry",
@@ -323,13 +311,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "ad_id",
-   "fieldtype": "Data",
-   "label": "Ad ID",
-   "read_only": 1
-  },
-  {
-   "collapsible": 1,
    "fieldname": "section_break_wkub",
    "fieldtype": "Section Break",
    "label": "Facebook Pages"
@@ -338,6 +319,35 @@
    "fieldname": "fb_pages",
    "fieldtype": "Table",
    "options": "Facebook Pages",
+   "read_only": 1
+  },
+  {
+   "fieldname": "profile_image",
+   "fieldtype": "Attach Image",
+   "label": "Profile Image"
+  },
+  {
+   "fieldname": "oauth_10a_token",
+   "fieldtype": "Password",
+   "label": "OAuth 1.0a Token",
+   "read_only": 1
+  },
+  {
+   "fieldname": "oauth_10a_secret",
+   "fieldtype": "Data",
+   "label": "OAuth 1.0a Secret",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ad_account_id",
+   "fieldtype": "Data",
+   "label": "Ads Account ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ad_id",
+   "fieldtype": "Data",
+   "label": "Ads ID",
    "read_only": 1
   }
  ],
@@ -349,7 +359,7 @@
    "link_fieldname": "ads_account"
   }
  ],
- "modified": "2026-01-08 18:10:59.478878",
+ "modified": "2026-01-12 13:40:17.605579",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ads Account Integration",
