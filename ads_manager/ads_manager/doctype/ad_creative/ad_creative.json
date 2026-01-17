@@ -1,0 +1,114 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-01-08 12:10:17.994310",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_bdvd",
+  "name1",
+  "account",
+  "creative_type",
+  "description",
+  "caption",
+  "message",
+  "link",
+  "call_to_action",
+  "page",
+  "media",
+  "creative_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_bdvd",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "label": "Creative Name"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "caption",
+   "fieldtype": "Data",
+   "label": "Caption"
+  },
+  {
+   "fieldname": "message",
+   "fieldtype": "Small Text",
+   "label": "Message"
+  },
+  {
+   "fieldname": "link",
+   "fieldtype": "Data",
+   "label": "Link"
+  },
+  {
+   "fieldname": "call_to_action",
+   "fieldtype": "Select",
+   "label": "Call To Action",
+   "options": "Learn More\nShop Now\nSign Up"
+  },
+  {
+   "fieldname": "page",
+   "fieldtype": "Select",
+   "label": "Page"
+  },
+  {
+   "fieldname": "media",
+   "fieldtype": "Table",
+   "label": "Media",
+   "options": "Ad Media"
+  },
+  {
+   "fieldname": "account",
+   "fieldtype": "Link",
+   "label": "Account",
+   "options": "Ads Account Integration"
+  },
+  {
+   "fieldname": "creative_type",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Creative Type"
+  },
+  {
+   "fieldname": "creative_id",
+   "fieldtype": "Data",
+   "label": "Creative ID",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-12 20:28:39.350663",
+ "modified_by": "Administrator",
+ "module": "Ads Manager",
+ "name": "Ad Creative",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,86 @@
+[project]
+name = "ads_manager"
+version = "0.0.1"
+description = "Social Media Ads Scheduler and management"
+readme = "README.md"
+license = { text = "MIT" }
+
+authors = [
+    { name = "Abhishek", email = "abhishekhiremath4949@gmail.com" }
+]
+
+keywords = ["frappe", "ads", "social media", "scheduler", "management"]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Frappe",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+requires-python = ">=3.10"
+
+dependencies = [
+    "tweepy>=4.14.0",
+    "google-api-python-client>=2.100.0",
+    "google-auth>=2.23.0",
+    "google-auth-oauthlib>=1.1.0",
+    "requests>=2.31.0",
+    "requests-oauthlib>=1.3.1",
+    "Pillow>=10.0.0",
+    "python-magic>=0.4.27",
+]
+
+[project.urls]
+Homepage = "https://github.com/Abhishek-Hiremath49/Ads-Manager"
+Repository = "https://github.com/Abhishek-Hiremath49/Ads-Manager.git"
+Documentation = "https://github.com/Abhishek-Hiremath49/Ads-Manager#readme"
+Issues = "https://github.com/Abhishek-Hiremath49/Ads-Manager/issues"
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+# Bench-specific dev dependencies
+[tool.bench.dev-dependencies]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ads_manager*"]
+
+[tool.black]
+line-length = 110
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["F", "E", "W", "I", "UP", "B", "RUF"]
+ignore = [
+    "B017",
+    "B018",
+    "B023",
+    "B904",
+    "E101",
+    "E402",
+    "E501",
+    "E741",
+    "F401",
+    "F403",
+    "F405",
+    "F722",
+    "W191",
+]
+
+typing-modules = ["frappe.types.DF"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "tab"
+docstring-code-format = true

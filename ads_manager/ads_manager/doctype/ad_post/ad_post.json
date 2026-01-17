@@ -1,0 +1,102 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-01-07 18:02:40.449123",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_jyzl",
+  "name1",
+  "campagin",
+  "ads_account",
+  "organisation",
+  "ad_set",
+  "status"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_jyzl",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "campagin",
+   "fieldtype": "Link",
+   "label": "Campagin",
+   "options": "Marketing Campaign"
+  },
+  {
+   "fieldname": "ads_account",
+   "fieldtype": "Link",
+   "label": "Ads Account",
+   "options": "Ads Account Integration",
+   "reqd": 1
+  },
+  {
+   "fieldname": "organisation",
+   "fieldtype": "Link",
+   "label": "Organisation",
+   "options": "CRM Organization"
+  },
+  {
+   "fieldname": "ad_set",
+   "fieldtype": "Link",
+   "label": "Ad Set",
+   "options": "Ad Set"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "ACTIVE\nPAUSED\nDELETED\nARCHIVED"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "link_doctype": "Marketing Campaign",
+   "link_fieldname": "Name"
+  },
+  {
+   "link_doctype": "Ads Account Integration",
+   "link_fieldname": "ads_account"
+  },
+  {
+   "link_doctype": "Ad Set",
+   "link_fieldname": "Name"
+  },
+  {
+   "link_doctype": "Ad Creative",
+   "link_fieldname": "Name"
+  }
+ ],
+ "modified": "2026-01-08 12:53:43.206682",
+ "modified_by": "Administrator",
+ "module": "Ads Manager",
+ "name": "Ad Post",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

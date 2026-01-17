@@ -1,0 +1,77 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"yU2F3tsCRv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Ads Scheduler</span>\",\"col\":12}},{\"id\":\"AAcr2A0ovS\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Ads Setting\",\"col\":4}},{\"id\":\"galMEqd9Sc\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Ads Account Integration\",\"col\":4}},{\"id\":\"kgIbpaIUd0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Ads Campaign\",\"col\":4}},{\"id\":\"Kn412Ps-37\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Ad Set\",\"col\":4}},{\"id\":\"HAbziDmmE7\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Ad Creative\",\"col\":4}},{\"id\":\"HBtYmzRazo\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Ad Post\",\"col\":4}}]",
+ "creation": "2026-01-02 09:47:10.529871",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "table_2",
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "Ads Scheduler",
+ "links": [],
+ "modified": "2026-01-12 13:16:04.174973",
+ "modified_by": "Administrator",
+ "module": "Ads Manager",
+ "name": "Ads Scheduler",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 2.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Ads Campaign",
+   "link_to": "Ads Campaign",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Ads Setting",
+   "link_to": "Ads Setting",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Ads Account Integration",
+   "link_to": "Ads Account Integration",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Ad Set",
+   "link_to": "Ad Set",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Ad Post",
+   "link_to": "Ad Post",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Ad Creative",
+   "link_to": "Ad Creative",
+   "stats_filter": "[]",
+   "type": "DocType"
+  }
+ ],
+ "title": "Ads Scheduler"
+}
