@@ -1,294 +1,301 @@
 """
 Meta Ads Provider - Direct calls to Meta Graph API (no SDK)
+Handles Facebook and Instagram ad operations through Meta Graph API
 """
 
 import requests
 import frappe
-from typing import Dict
-from ads_manager.providers.base import (
+from typing import Dict, Optional
+from ads_manager.ads_manager.providers.base import (
     BaseProvider,
-    LaunchResult,
+    PublishResult,
     AnalyticsResult,
     TokenRefreshResult,
 )
+import logging
+
+logger = logging.getLogger(__name__)
+
+REQUEST_TIMEOUT = 30
+MAX_RETRIES = 3
 
 
 class MetaAdsProvider(BaseProvider):
-    PLATFORM = "Meta"  # Unified for FB/IG Ads
-    MAX_BUDGET = 100000  # USD, example
+    PLATFORM = "Meta"
+    MAX_BUDGET = 100000
     SUPPORTS_IMAGES = True
     SUPPORTS_VIDEO = True
     DAILY_API_LIMIT = 200
 
     def __init__(self, integration_name: str = None):
         super().__init__(integration_name)
-        self.integration = frappe.get_doc("Ads Account Integration", integration_name)
-        self.base_url = f"https://graph.facebook.com/{self.integration.facebook_api_version or 'v21.0'}"
-        self.access_token = self.integration.get_access_token()
-        self.account_id = self.integration.ad_account_id
-        if not self.access_token:
-            raise ValueError("Access token required")
+        try:
+            self.api_version = self.settings.meta_api_version or "v24.0"
+            self.integration = frappe.get_doc("Ads Account Integration", integration_name)
+            self.base_url = f"https://graph.facebook.com/{self.api_version}"
+            self.access_token = self.integration.get_access_token()
+            self.account_id = self.integration.ad_account_id.strip()
+
+            if not self.access_token:
+                raise ValueError("No access token")
+            if not self.account_id or not self.account_id.startswith("act_"):
+                raise ValueError(f"Invalid ad_account_id: {self.account_id}")
+        except Exception as e:
+            logger.error(f"MetaAdsProvider init failed for {integration_name}: {e}")
+            raise
 
     def _make_request(
-        self,
-        method: str,
-        endpoint: str,
-        params: Dict = None,
-        json_data: Dict = None,
-        headers: Dict = None,
+        self, method: str, endpoint: str, params: Dict = None, json_data: Dict = None, headers: Dict = None, files: Dict = None
     ) -> Dict:
-        """Helper for API requests with auth and error handling"""
-        url = f"{self.base_url}/{endpoint}"
-        default_headers = {
-            "Content-Type": "application/json",
-        }
+        url = f"{self.base_url}/{endpoint.lstrip('/')}"
+        default_headers = {"Content-Type": "application/json"}
         if headers:
             default_headers.update(headers)
 
-        # For GET, use params; for POST, use json
-        kwargs = {"headers": default_headers}
+        kwargs = {"headers": default_headers, "timeout": REQUEST_TIMEOUT}
         if method.upper() == "GET":
-            kwargs["params"] = params or {}
-            kwargs["params"]["access_token"] = self.access_token
+            kwargs["params"] = {**(params or {}), "access_token": self.access_token}
         else:
-            kwargs["json"] = json_data or {}
+            if files:
+                # For multipart file uploads, don't set Content-Type (requests will set it with boundary)
+                kwargs.pop("headers", None)
+                kwargs["files"] = files
+            else:
+                kwargs["json"] = json_data or {}
             kwargs["params"] = {"access_token": self.access_token}
 
-        try:
-            response = requests.request(method, url, **kwargs)
-            response.raise_for_status()
-            data = response.json()
-            if "error" in data:
-                raise ValueError(data["error"].get("message", "API Error"))
-            self.increment_rate_limit()
-            return data
-        except requests.RequestException as e:
-            error_msg = str(
-                e.response.json() if e.response and e.response.content else e
-            )
-            frappe.log_error(
-                f"Meta API request failed: {error_msg} | Endpoint: {endpoint}",
-                "Meta Ads API Error",
-            )
-            raise
+        for attempt in range(MAX_RETRIES):
+            try:
+                response = requests.request(method.upper(), url, **kwargs)
+                response.raise_for_status()
+                data = response.json()
 
-    def launch_campaign(self, payload: Dict) -> LaunchResult:
-        """Create a campaign via direct API POST"""
+                if "error" in data:
+                    error = data["error"]
+                    error_msg = (
+                        f"[{error.get('code')}] {error.get('message')} "
+                        f"(type: {error.get('type')}, subcode: {error.get('error_subcode', 'N/A')})"
+                    )
+                    logger.error(f"Meta API ERROR {endpoint}: {error_msg}")
+                    raise ValueError(error_msg)
+
+                self.increment_rate_limit()
+                return data
+
+            except requests.HTTPError as e:
+                try:
+                    err_data = e.response.json()
+                    error = err_data.get("error", {})
+                    error_msg = (
+                        f"HTTP {e.response.status_code} [{error.get('code')}] "
+                        f"{error.get('message', e.response.reason)} "
+                        f"(subcode: {error.get('error_subcode', 'N/A')})"
+                    )
+                except:
+                    error_msg = f"HTTP {e.response.status_code}: {e.response.text[:200]}"
+                logger.error(f"HTTP ERROR (attempt {attempt+1}): {error_msg}")
+                if attempt == MAX_RETRIES - 1:
+                    raise ValueError(error_msg)
+            except requests.RequestException as e:
+                logger.warning(f"Request failed (attempt {attempt+1}): {e}")
+                if attempt == MAX_RETRIES - 1:
+                    raise ValueError(str(e))
+
+    def create_campaign(self, payload: Dict) -> PublishResult:
+        """Create Meta campaign with v24.0 requirements"""
         endpoint = f"{self.account_id}/campaigns"
-        data = {
-            "name": payload.get("name", "New Campaign"),
-            "objective": payload.get(
-                "objective", "REACH"
-            ),  # e.g., 'LINK_CLICKS', 'CONVERSIONS'
-            "status": "PAUSED" if payload.get("start_paused", False) else "ACTIVE",
-            "special_ad_categories": (
-                payload.get("special_ad_category", [None])
-                if payload.get("special_ad_category")
-                else []
-            ),
-            "daily_budget": int(
-                (payload.get("budget", 1000) or 0) * 100
-            ),  # Convert to cents
-            "bid_strategy": payload.get(
-                "bid_strategy", "LOWEST_COST_WITHOUT_CAP"
-            ),  # e.g., 'LOWEST_COST_WITH_BID_CAP'
-            "helio_configured": False,  # For advanced bidding if needed
+
+        # 🚨 CRITICAL: v24.0 MAPPING (your exact objectives from JSON)
+        objective_map = {
+            "Awareness": "OUTCOME_AWARENESS",
+            "Traffic": "OUTCOME_TRAFFIC",
+            "Engagement": "OUTCOME_ENGAGEMENT",
+            "Leads": "OUTCOME_LEADS",
+            "Sales": "OUTCOME_SALES",
         }
-        # Add platform targeting (e.g., Instagram only)
-        if payload.get("target_instagram") and not payload.get("target_facebook"):
-            data["attached_audience"] = {
-                "instagram_account_ids": [
-                    self.integration.instagram_business_account_id
-                ]
-            }
+        objective = payload.get("objective", "OUTCOME_AWARENESS")
+        objective = objective_map.get(objective, objective)
+
+        # 🚨 CRITICAL: special_ad_categories MUST be array (empty = [])
+        special_cat = payload.get("special_ad_categories") or payload.get("special_ad_category") or None
+        special_ad_categories = []
+        if special_cat and special_cat != "NONE":
+            cat_map = {"Housing": "HOUSING", "Employment": "EMPLOYMENT", "Credit": "CREDIT"}
+            if isinstance(special_cat, str):
+                special_ad_categories = [cat_map.get(special_cat, special_cat)]
+            else:
+                special_ad_categories = [cat_map.get(c, c) for c in special_cat if c]
+
+        # 🚨 MINIMAL v24.0 REQUIRED PAYLOAD
+        campaign_data = {
+            "name": payload.get("name", "ERPNext Campaign").strip()[:100],  # Max 100 chars
+            "objective": objective,
+            "status": (payload.get("status") or "PAUSED").upper(),
+            "buying_type": "AUCTION",  # ← THIS WAS MISSING! REQUIRED in v24.0
+            "special_ad_categories": special_ad_categories,  # ← ALWAYS ARRAY
+            "is_adset_budget_sharing_enabled": payload.get("is_adset_budget_sharing_enabled", False),
+        }
+
+        logger.info(f"Creating campaign on {endpoint}: {campaign_data}")
 
         try:
-            result_data = self._make_request("POST", endpoint, json_data=data)
+            response = self._make_request("POST", endpoint, json_data=campaign_data)
+            campaign_id = response.get("id")
 
-            if "id" in result_data:
-                # Optionally chain AdSet creation (simplified; expand as needed)
-                adset_data = self._create_adset(result_data["id"], payload)
-                if adset_data.get("id"):
-                    # Chain Ad creation
-                    creative_id = payload.get("creative_id")  # From Ad Creative doc
-                    if creative_id:
-                        self._create_ad(
-                            adset_data["id"], {"creative": {"creative_id": creative_id}}
-                        )
+            if campaign_id:
+                logger.info(f"✅ Campaign created: {campaign_id}")
+                return PublishResult(success=True, campaign_id=campaign_id, raw_response=response)
+            else:
+                raise ValueError(f"No campaign ID in response: {response}")
 
-                frappe.log_error(
-                    f"Campaign launched: {result_data['id']}", "Ad Launch Success"
-                )
-                return LaunchResult(
-                    success=True,
-                    campaign_id=result_data["id"],
-                    raw_response=result_data,
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f"Campaign creation FAILED: {error_msg}")
+            frappe.log_error(
+                {
+                    "account_id": self.account_id,
+                    "payload": campaign_data,
+                    "error": error_msg,
+                    "response": getattr(e, "response", None),
+                },
+                "Meta Campaign Creation Error",
+            )
+            return PublishResult(success=False, error_message=error_msg)
+
+    def create_ad_set(self, payload: Dict) -> PublishResult:
+        """Create Meta ad set with v24.0 requirements"""
+        endpoint = f"{self.account_id}/adsets"
+
+        # Minimal required payload
+        ad_set_data = {
+            "name": payload.get("name").strip()[:100],
+            "campaign_id": payload["campaign_id"],
+            "daily_budget": payload.get("daily_budget"),
+            "targeting": payload.get("targeting", {}),
+            "billing_event": payload.get("billing_event"),
+            "status": "PAUSED",  # Force PAUSED on creation
+            "bid_amount": payload.get("bid_amount"),
+            # Add optimization_goal if needed, based on campaign
+        }
+
+        if not ad_set_data["campaign_id"]:
+            raise ValueError("campaign_id required")
+
+        logger.info(f"Creating ad set on {endpoint}: {ad_set_data}")
+
+        try:
+            response = self._make_request("POST", endpoint, json_data=ad_set_data)
+            ad_set_id = response.get("id")
+
+            if ad_set_id:
+                logger.info(f"✅ Ad Set created: {ad_set_id}")
+                return PublishResult(
+                    success=True, campaign_id=ad_set_id, raw_response=response  # Reuse for adset_id
                 )
             else:
-                return LaunchResult(
-                    success=False,
-                    error_message=result_data.get("error", {}).get(
-                        "message", "Launch failed"
-                    ),
-                )
+                raise ValueError(f"No ad set ID in response: {response}")
+
         except Exception as e:
-            return LaunchResult(success=False, error_message=str(e))
+            error_msg = str(e)
+            logger.error(f"Ad Set creation FAILED: {error_msg}")
+            frappe.log_error(
+                message=error_msg,
+                title="Meta Ad Set Creation Failed",
+                content={
+                    "account_id": self.account_id,
+                    "sent_payload": ad_set_data,
+                    "meta_error": str(e),
+                },
+            )
+            return PublishResult(success=False, error_message=error_msg)
 
-    def _create_adset(self, campaign_id: str, payload: Dict) -> Dict:
-        """Helper: Create AdSet under campaign"""
-        endpoint = f"{campaign_id}/adsets"
-        data = {
-            "name": f"{payload.get('name')}-AdSet",
-            "daily_budget": int((payload.get("budget", 1000) or 0) * 100),
-            "optimization_goal": "LINK_CLICKS",  # Map from objective
-            "targeting": {
-                "geo_locations": {"countries": ["US"]},  # Default; pull from campaign
-                "device_platforms": (
-                    ["mobile", "desktop"]
-                    if payload.get("target_instagram")
-                    else ["facebook"]
-                ),
-            },
-            "status": "PAUSED",
+    def upload_image(self, payload: Dict) -> PublishResult:
+        """Upload image to Meta and return hash"""
+        endpoint = f"{self.account_id}/adimages"
+
+        # Assume payload has 'filename' with full path
+        filename = payload.get("filename")
+        if not filename:
+            raise ValueError("filename required for image upload")
+
+        with open(filename, "rb") as f:
+            files = {"file": f}
+            response = self._make_request("POST", endpoint, files=files)  # Use files for multipart
+
+            if "images" in response:
+                image_data = response["images"]
+                image_hash = list(image_data.values())[0].get("hash")
+                if image_hash:
+                    # Store image_hash in campaign_id field since PublishResult doesn't have image_hash
+                    return PublishResult(success=True, campaign_id=image_hash)
+                else:
+                    raise ValueError("No image hash in response")
+            else:
+                raise ValueError("Image upload failed")
+
+    def create_creative(self, payload: Dict) -> PublishResult:
+        """Create Meta creative with v24.0 requirements"""
+        endpoint = f"{self.account_id}/adcreatives"
+
+        creative_data = {
+            "name": payload.get("name", "ERPNext Creative"),
+            "object_story_spec": payload["object_story_spec"],
         }
-        try:
-            return self._make_request("POST", endpoint, json_data=data)
-        except:
-            return {}
 
-    def _create_ad(self, adset_id: str, creative_data: Dict) -> Dict:
-        """Helper: Create Ad under AdSet"""
-        endpoint = f"{adset_id}/ads"
-        data = {
-            "name": "New Ad",
-            "adset_id": adset_id,
-            "creative": creative_data,
-            "status": "PAUSED",
-        }
-        try:
-            return self._make_request("POST", endpoint, json_data=data)
-        except:
-            return {}
+        logger.info(f"Creating creative on {endpoint}")
+        logger.info(f"Creative data: {creative_data}")
 
+        try:
+            response = self._make_request("POST", endpoint, json_data=creative_data)
+            creative_id = response.get("id")
+
+            if creative_id:
+                logger.info(f"✅ Creative created: {creative_id}")
+                return PublishResult(success=True, creative_id=creative_id, raw_response=response)
+            else:
+                raise ValueError(f"No creative ID in response: {response}")
+
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f"Creative creation FAILED: {error_msg}")
+            frappe.log_error(
+                title="Meta Creative Creation Failed",
+                message=f"{error_msg}\n\nAccount ID: {self.account_id}\n\nPayload: {str(creative_data)}"
+            )
+            return PublishResult(success=False, error_message=error_msg)
+
+    # Required abstract methods (minimal implementations)
     def fetch_account_analytics(self) -> AnalyticsResult:
-        """Get account-level insights via GET"""
-        endpoint = f"{self.account_id}/insights"
-        params = {
-            "fields": "impressions,spend,clicks,ctr,reach,cpm,cpc",
-            "date_preset": "last_7d",
-            "level": "account",
-        }
-
         try:
-            data = self._make_request("GET", endpoint, params=params)
-            insights = data.get("data", [])
-            metrics = {
-                "impressions": sum(int(i.get("impressions", 0)) for i in insights),
-                "spend": sum(float(i.get("spend", 0)) for i in insights),
-                "clicks": sum(int(i.get("clicks", 0)) for i in insights),
-                "ctr": (
-                    round(
-                        sum(float(i.get("ctr", 0)) for i in insights) / len(insights), 4
-                    )
-                    if insights
-                    else 0
-                ),
-                "cpm": (
-                    round(
-                        sum(float(i.get("cpm", 0)) for i in insights) / len(insights), 2
-                    )
-                    if insights
-                    else 0
-                ),
-                "cpc": (
-                    round(
-                        sum(float(i.get("cpc", 0)) for i in insights) / len(insights), 2
-                    )
-                    if insights
-                    else 0
-                ),
-                "reach": sum(int(i.get("reach", 0)) for i in insights),
-            }
-            return AnalyticsResult(success=True, metrics=metrics, raw_response=data)
-        except Exception as e:
-            frappe.log_error(
-                f"Account analytics failed: {str(e)}", "Meta Analytics Error"
+            data = self._make_request(
+                "GET",
+                f"{self.account_id}/insights",
+                params={"date_preset": "last_7d", "fields": "impressions,spend"},
             )
+            return AnalyticsResult(success=True, metrics=data.get("data", []))
+        except Exception as e:
             return AnalyticsResult(success=False, error_message=str(e))
 
-    def fetch_campaign_analytics(self, campaign_id: str) -> AnalyticsResult:
-        """Get campaign-level insights"""
-        endpoint = f"{campaign_id}/insights"
-        params = {
-            "fields": "impressions,spend,clicks,ctr",
-            "date_preset": "last_7d",
-            "level": "campaign",
-        }
-
+    def fetch_post_analytics(self, campaign_id: str) -> AnalyticsResult:
         try:
-            data = self._make_request("GET", endpoint, params=params)
-            insights = data.get("data", [])
-            metrics = {
-                "impressions": sum(int(i.get("impressions", 0)) for i in insights),
-                "spend": sum(float(i.get("spend", 0)) for i in insights),
-                "clicks": sum(int(i.get("clicks", 0)) for i in insights),
-                "ctr": (
-                    round(
-                        sum(float(i.get("ctr", 0)) for i in insights) / len(insights), 4
-                    )
-                    if insights
-                    else 0
-                ),
-            }
-            return AnalyticsResult(success=True, metrics=metrics, raw_response=data)
-        except Exception as e:
-            frappe.log_error(
-                f"Campaign {campaign_id} analytics failed: {str(e)}",
-                "Campaign Analytics Error",
+            data = self._make_request(
+                "GET",
+                f"{campaign_id}/insights",
+                params={"date_preset": "last_7d", "fields": "impressions,spend"},
             )
-            return AnalyticsResult(success=False, error_message=str(e))
-
-    def refresh_token(self, integration_name: str = None) -> TokenRefreshResult:
-        """Exchange short-lived token for long-lived (up to 60 days)"""
-        settings = frappe.get_single("Ads Setting")
-        endpoint = "oauth/access_token"
-        params = {
-            "grant_type": "fb_exchange_token",
-            "client_id": settings.facebook_app_id,
-            "client_secret": settings.facebook_app_secret,
-            "fb_exchange_token": self.access_token,
-        }
-
-        try:
-            data = self._make_request("GET", endpoint, params=params)
-            if "access_token" in data:
-                return TokenRefreshResult(
-                    success=True,
-                    access_token=data["access_token"],
-                    expires_in=data.get(
-                        "expires_in", 5184000
-                    ),  # Default 60 days in seconds
-                )
-            else:
-                return TokenRefreshResult(
-                    success=False,
-                    error_message=data.get("error", {}).get(
-                        "message", "Refresh failed"
-                    ),
-                )
+            return AnalyticsResult(success=True, metrics=data.get("data", []))
         except Exception as e:
-            return TokenRefreshResult(success=False, error_message=str(e))
+            return AnalyticsResult(success=False, error_message=str(e))
 
     def get_daily_limit(self) -> int:
-        """Daily API call limit (Meta's is ~200 for most apps)"""
         return self.DAILY_API_LIMIT
 
+    def refresh_token(self, integration_name: str = None) -> TokenRefreshResult:
+        return TokenRefreshResult(success=False, error_message="Not implemented")
+
     def validate_credentials(self) -> Dict:
-        """Test connection with simple GET to ad account"""
         try:
-            endpoint = self.account_id
-            params = {"fields": "name,account_status"}
-            data = self._make_request("GET", endpoint, params=params)
+            data = self._make_request("GET", self.account_id, params={"fields": "name,account_status"})
             return {"success": True, "account_name": data.get("name")}
         except Exception as e:
             return {"success": False, "error": str(e)}

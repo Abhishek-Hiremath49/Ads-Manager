@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class AdPost(Document):
+class FacebookPages(Document):
 	pass

@@ -41,7 +41,7 @@ frappe.ui.form.on('Ads Account Integration', {
     connect_account: function (frm) {
         // Call OAuth initiation
         frappe.call({
-            method: 'ads_manager.api.oauth.get_facebook_oauth_url',
+            method: 'ads_manager.ads_manager.api.oauth.get_facebook_oauth_url',
             callback: function (r) {
                 if (r.message.oauth_url) {
                     window.location.href = r.message.oauth_url;
@@ -52,7 +52,7 @@ frappe.ui.form.on('Ads Account Integration', {
 
     test_connection: function (frm) {
         frappe.call({
-            method: 'ads_manager.api.providers.validate_credentials',
+            method: 'ads_manager.ads_manager.api.oauth.test_connection',
             args: { integration: frm.doc.name },
             freeze: true,
             freeze_message: __('Testing connection...'),
@@ -66,30 +66,27 @@ frappe.ui.form.on('Ads Account Integration', {
             }
         });
     },
-
-    sync_campaigns: function (frm) {
-        frappe.call({
-            method: 'ads_manager.api.providers.sync_campaigns',
-            args: { integration: frm.doc.name },
-            freeze: true,
-            freeze_message: __('Syncing campaigns...'),
-            callback: function (r) {
-                if (r.message.success) {
-                    frappe.show_alert({
-                        message: __('Campaigns synced successfully'),
-                        indicator: 'green'
-                    });
-                    frm.reload_doc();
-                } else {
-                    frappe.show_alert({
-                        message: __('Sync failed: ') + (r.message.error_message || 'Unknown error'),
-                        indicator: 'red'
-                    });
-                }
+    disconnect_account: function (frm) {
+        frappe.confirm(
+            __('Are you sure you want to disconnect this account?'),
+            function () {
+                frappe.call({
+                    method: 'ads_manager.ads_manager.api.oauth.disconnect',
+                    args: { integration: frm.doc.name },
+                    freeze: true,
+                    freeze_message: __('Disconnecting...'),
+                    callback: function (r) {
+                        if (r.message.success) {
+                            frappe.msgprint(__('Account disconnected.'));
+                            frm.reload_doc();
+                        } else {
+                            frappe.msgprint(__('Failed to disconnect: ') + r.message.error);
+                        }
+                    }
+                });
             }
-        });
+        );
     },
-
     update_status_indicator: function (frm) {
         let indicator = 'grey';
         let status = frm.doc.connection_status;
