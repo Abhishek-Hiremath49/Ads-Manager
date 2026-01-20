@@ -102,10 +102,10 @@ class MetaAdsProvider(BaseProvider):
                     raise ValueError(str(e))
 
     def create_campaign(self, payload: Dict) -> PublishResult:
-        """Create Meta campaign with v24.0 requirements"""
+        """Create Meta campaign with v24.0 requirements (matching Ads Campaign doctype)"""
         endpoint = f"{self.account_id}/campaigns"
 
-        # 🚨 CRITICAL: v24.0 MAPPING (your exact objectives from JSON)
+        # 🚨 CRITICAL: v24.0 MAPPING (matching doctype objectives)
         objective_map = {
             "Awareness": "OUTCOME_AWARENESS",
             "Traffic": "OUTCOME_TRAFFIC",
@@ -117,21 +117,22 @@ class MetaAdsProvider(BaseProvider):
         objective = objective_map.get(objective, objective)
 
         # 🚨 CRITICAL: special_ad_categories MUST be array (empty = [])
-        special_cat = payload.get("special_ad_categories") or payload.get("special_ad_category") or None
+        # Use 'category' field from Ads Campaign doctype
+        category = payload.get("category") or payload.get("special_ad_category") or None
         special_ad_categories = []
-        if special_cat and special_cat != "NONE":
+        if category and category != "NONE":
             cat_map = {"Housing": "HOUSING", "Employment": "EMPLOYMENT", "Credit": "CREDIT"}
-            if isinstance(special_cat, str):
-                special_ad_categories = [cat_map.get(special_cat, special_cat)]
+            if isinstance(category, str):
+                special_ad_categories = [cat_map.get(category, category)]
             else:
-                special_ad_categories = [cat_map.get(c, c) for c in special_cat if c]
+                special_ad_categories = [cat_map.get(c, c) for c in category if c]
 
-        # 🚨 MINIMAL v24.0 REQUIRED PAYLOAD
+        # 🚨 MINIMAL v24.0 REQUIRED PAYLOAD (from Ads Campaign doctype)
         campaign_data = {
-            "name": payload.get("name", "ERPNext Campaign").strip()[:100],  # Max 100 chars
+            "name": payload.get("campaign_name", payload.get("name", "Campaign")).strip()[:100],  # Max 100 chars, from doctype
             "objective": objective,
             "status": (payload.get("status") or "PAUSED").upper(),
-            "buying_type": "AUCTION",  # ← THIS WAS MISSING! REQUIRED in v24.0
+            "buying_type": (payload.get("choose_buying_type") or "AUCTION").upper(),  # From doctype field
             "special_ad_categories": special_ad_categories,  # ← ALWAYS ARRAY
             "is_adset_budget_sharing_enabled": payload.get("is_adset_budget_sharing_enabled", False),
         }
@@ -163,23 +164,83 @@ class MetaAdsProvider(BaseProvider):
             return PublishResult(success=False, error_message=error_msg)
 
     def create_ad_set(self, payload: Dict) -> PublishResult:
-        """Create Meta ad set with v24.0 requirements"""
+        """Create Meta ad set with v24.0 requirements (matching Ad Set doctype)"""
         endpoint = f"{self.account_id}/adsets"
 
-        # Minimal required payload
+        # Map doctype performance_goal to Meta optimization_goal
+        performance_goal_map = {
+            "None": "NONE",
+            "Maximise reach of ads": "REACH",
+            "Maximise number of impression": "IMPRESSIONS",
+            "Maximise ad recall lift": "AD_RECALL_LIFT",
+            "Maximise ThruPlay views": "THRUPLAY",
+            "Maximise 2-second continuous video plays": "VIDEO_2_SEC_CONTINUOUS_VIEWS",
+            "Maximise number of landing page views": "LANDING_PAGE_VIEWS",
+            "Maximise number of link clicks": "LINK_CLICKS",
+            "Maximise daily unique reach": "DAILY_UNIQUE_REACH",
+            "Maximise number of conversations": "CONVERSATIONS",
+            "Maximise number of Instagram profile visits": "PROFILE_VISIT",
+            "Maximise number of calls": "CALLS",
+            "Maximise engagement with a post": "POST_ENGAGEMENT",
+            "Maximise number of event responses": "EVENT_RESPONSES",
+            "Maximise number of app events": "APP_EVENTS",
+            "Maximise reminders set": "REMINDERS_SET",
+            "Maximise number of Page likes": "PAGE_LIKES",
+            "Maximise number of leads": "LEAD_GENERATION",
+            "Maximise number of conversion leads": "CONVERSION_LEAD_RATE",
+            "Maximise number of leads through messaging": "MESSAGING_PURCHASE_CONVERSION",
+            "Maximise number of app installs": "APP_INSTALLS",
+            "Maximise value of conversions": "MAXIMIZE_CONVERSION_VALUE",
+        }
+        
+        optimization_goal = payload.get("performance_goal", "NONE")
+        optimization_goal = performance_goal_map.get(optimization_goal, optimization_goal)
+
+        # Build targeting from doctype fields
+        targeting = payload.get("targeting", {})
+        
+        # Add geo targeting if geo_location provided
+        if payload.get("geo_location"):
+            targeting["geo_locations"] = [{"regions": [{"key": payload.get("geo_location")}]}]
+        
+        # Add age targeting from doctype
+        if payload.get("age_min") or payload.get("age_max"):
+            targeting["age_min"] = payload.get("age_min", 18)
+            targeting["age_max"] = payload.get("age_max", 65)
+        
+        # Add gender targeting
+        if payload.get("gender") and payload.get("gender") != "All":
+            gender_map = {"Male": 1, "Female": 2, "All": 0}
+            targeting["genders"] = [gender_map.get(payload.get("gender"), 0)]
+
+        # Required payload with doctype fields (from Ad Set doctype)
         ad_set_data = {
-            "name": payload.get("name").strip()[:100],
-            "campaign_id": payload["campaign_id"],
-            "daily_budget": payload.get("daily_budget"),
-            "targeting": payload.get("targeting", {}),
+            "name": payload.get("ad_set_name", payload.get("name", "Ad Set")).strip()[:100],  # From doctype
+            "campaign_id": payload.get("campaign") or payload.get("campaign_id"),  # Link to campaign doctype
+            "daily_budget": int(payload.get("daily_budget", 0) * 100) if payload.get("daily_budget") else None,  # In cents
+            "targeting": targeting,
             "billing_event": payload.get("billing_event"),
             "status": "PAUSED",  # Force PAUSED on creation
-            "bid_amount": payload.get("bid_amount"),
-            # Add optimization_goal if needed, based on campaign
+            "optimization_goal": optimization_goal,
+            "bid_strategy": (payload.get("bid_strategy") or "LOWEST_COST_WITHOUT_CAP").upper(),  # From doctype
         }
+        
+        # Add bid_amount if bid_strategy requires it
+        if payload.get("bid_amount") and payload.get("bid_strategy") in ["LOWEST_COST_WITH_BID_CAP", "COST_CAP"]:
+            ad_set_data["bid_amount"] = int(payload.get("bid_amount") * 100)  # In cents
+        
+        # Add lifetime_budget if provided
+        if payload.get("lifetime_budget"):
+            ad_set_data["lifetime_budget"] = int(payload.get("lifetime_budget") * 100)  # In cents
+        
+        # Add start/end times if provided
+        if payload.get("start_time"):
+            ad_set_data["start_time"] = int(payload.get("start_time").timestamp())
+        if payload.get("end_time"):
+            ad_set_data["end_time"] = int(payload.get("end_time").timestamp())
 
         if not ad_set_data["campaign_id"]:
-            raise ValueError("campaign_id required")
+            raise ValueError("campaign_id or campaign link required")
 
         logger.info(f"Creating ad set on {endpoint}: {ad_set_data}")
 
@@ -234,13 +295,86 @@ class MetaAdsProvider(BaseProvider):
                 raise ValueError("Image upload failed")
 
     def create_creative(self, payload: Dict) -> PublishResult:
-        """Create Meta creative with v24.0 requirements"""
+        """Create Meta creative with v24.0 requirements (matching Ad Creative doctype)"""
         endpoint = f"{self.account_id}/adcreatives"
 
-        creative_data = {
-            "name": payload.get("name", "ERPNext Creative"),
-            "object_story_spec": payload["object_story_spec"],
+        # Map CTA options to Meta values (from Ad Creative doctype)
+        cta_map = {
+            "Learn More": "LEARN_MORE",
+            "Shop Now": "SHOP_NOW",
+            "Sign Up": "SIGN_UP",
         }
+        
+        call_to_action = payload.get("call_to_action", "LEARN_MORE")
+        call_to_action = cta_map.get(call_to_action, call_to_action)
+
+        # Build object_story_spec from doctype fields
+        object_story_spec = payload.get("object_story_spec", {})
+        
+        # If not provided, construct from creative doctype fields
+        if not object_story_spec:
+            link_data = {
+                "message": payload.get("body", ""),
+                "link": payload.get("link_url") or payload.get("object_url", ""),
+            }
+            
+            if payload.get("title"):
+                link_data["caption"] = payload.get("title")
+            
+            # Check ad type from Ad Creative doctype
+            if payload.get("select_ad_type") == "Create ad":
+                # Single image or video ad
+                if payload.get("single_image_or_video"):
+                    if payload.get("image_hash"):
+                        object_story_spec = {
+                            "link_data": {
+                                **link_data,
+                                "image_hash": payload.get("image_hash"),
+                                "call_to_action_type": call_to_action,
+                            }
+                        }
+                    elif payload.get("video_id"):
+                        object_story_spec = {
+                            "video_data": {
+                                "message": payload.get("body", ""),
+                                "video_id": payload.get("video_id"),
+                                "call_to_action_type": call_to_action,
+                            }
+                        }
+                # Carousel ad
+                elif payload.get("carousel"):
+                    object_story_spec = {
+                        "link_data": {
+                            "message": payload.get("body", ""),
+                            "link": link_data.get("link", ""),
+                            "multi_share_end_card": False,
+                        }
+                    }
+                # Collection ad
+                elif payload.get("collection"):
+                    object_story_spec = {
+                        "link_data": link_data
+                    }
+            elif payload.get("select_ad_type") == "Use existing post":
+                # Story-based ad from existing post
+                object_story_spec = {
+                    "page_id": payload.get("select_facebook_page", ""),
+                    "story_id": payload.get("object_url", ""),
+                }
+            else:
+                # Default to link data
+                object_story_spec = {
+                    "link_data": link_data
+                }
+
+        creative_data = {
+            "name": payload.get("creative_name", payload.get("name", "Creative")).strip()[:100],  # From Ad Creative doctype
+            "object_story_spec": object_story_spec,
+        }
+        
+        # Add object_type if specified in doctype
+        if payload.get("object_type"):
+            creative_data["object_type"] = payload.get("object_type")
 
         logger.info(f"Creating creative on {endpoint}")
         logger.info(f"Creative data: {creative_data}")
@@ -264,6 +398,49 @@ class MetaAdsProvider(BaseProvider):
             )
             return PublishResult(success=False, error_message=error_msg)
 
+    def create_ad(self, payload: Dict) -> PublishResult:
+        """Create Meta ad with v24.0 requirements (matching Ad Post doctype)"""
+        endpoint = f"{self.account_id}/ads"
+
+        ad_data = {
+            "name": payload.get("ad_name", payload.get("name", "Ad")).strip()[:100],  # From Ad Post doctype
+            "adset_id": payload.get("ad_set") or payload.get("adset_id"),  # Link to Ad Set doctype
+            "creative": {"creative_id": payload.get("ad_creative") or payload.get("creative_id")},  # Link to Ad Creative doctype (child table)
+            "status": "PAUSED",
+        }
+        
+        # Add partnership ad fields if enabled (from Ad Post doctype)
+        if payload.get("enable_partnership_ad"):
+            if payload.get("select_facebook_page"):
+                ad_data["adlabels"] = [{"name": "Partnership Ad"}]
+            if payload.get("select_instagram_account"):
+                ad_data["instagram_handle"] = payload.get("select_instagram_account")
+
+        logger.info(f"Creating ad on {endpoint}: {ad_data}")
+
+        try:
+            response = self._make_request("POST", endpoint, json_data=ad_data)
+            ad_id = response.get("id")
+
+            if ad_id:
+                logger.info(f"✅ Ad created: {ad_id}")
+                return PublishResult(success=True, campaign_id=ad_id, raw_response=response)  # Reuse for ad_id
+            else:
+                raise ValueError(f"No ad ID in response: {response}")
+
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f"Ad creation FAILED: {error_msg}")
+            frappe.log_error(
+                message=error_msg,
+                title="Meta Ad Creation Failed",
+                content={
+                    "account_id": self.account_id,
+                    "sent_payload": ad_data,
+                    "meta_error": str(e),
+                },
+            )
+            return PublishResult(success=False, error_message=error_msg)
     # Required abstract methods (minimal implementations)
     def fetch_account_analytics(self) -> AnalyticsResult:
         try:

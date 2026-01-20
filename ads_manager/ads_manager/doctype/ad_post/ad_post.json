@@ -6,12 +6,20 @@
  "engine": "InnoDB",
  "field_order": [
   "section_break_jyzl",
-  "name1",
-  "campagin",
-  "ads_account",
+  "enable",
+  "ad_name",
   "organisation",
   "ad_set",
-  "status"
+  "column_break_babw",
+  "ads_account",
+  "campagin",
+  "status",
+  "section_break_oajm",
+  "enable_partnership_ad",
+  "select_facebook_page",
+  "select_instagram_account",
+  "section_break_nhxa",
+  "ad_creative"
  ],
  "fields": [
   {
@@ -19,22 +27,17 @@
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "name1",
-   "fieldtype": "Data",
-   "label": "Name"
-  },
-  {
    "fieldname": "campagin",
    "fieldtype": "Link",
    "label": "Campagin",
-   "options": "Marketing Campaign"
+   "options": "Ads Campaign"
   },
   {
    "fieldname": "ads_account",
    "fieldtype": "Link",
    "label": "Ads Account",
    "options": "Ads Account Integration",
-   "reqd": 1
+   "search_index": 1
   },
   {
    "fieldname": "organisation",
@@ -52,30 +55,59 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "ACTIVE\nPAUSED\nDELETED\nARCHIVED"
+   "options": "ACTIVE\nPAUSED\nDELETED\nARCHIVED",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_oajm",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_partnership_ad",
+   "fieldtype": "Check",
+   "label": "Enable Partnership Ad"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable",
+   "fieldtype": "Check",
+   "label": "Enable"
+  },
+  {
+   "fieldname": "column_break_babw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "select_facebook_page",
+   "fieldtype": "Data",
+   "label": "Select Facebook Page"
+  },
+  {
+   "fieldname": "select_instagram_account",
+   "fieldtype": "Data",
+   "label": "Select Instagram Account"
+  },
+  {
+   "fieldname": "section_break_nhxa",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "ad_creative",
+   "fieldtype": "Table",
+   "label": "Ad Creative",
+   "options": "Ad Creative"
+  },
+  {
+   "fieldname": "ad_name",
+   "fieldtype": "Data",
+   "label": "Ad Name"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
- "links": [
-  {
-   "link_doctype": "Marketing Campaign",
-   "link_fieldname": "Name"
-  },
-  {
-   "link_doctype": "Ads Account Integration",
-   "link_fieldname": "ads_account"
-  },
-  {
-   "link_doctype": "Ad Set",
-   "link_fieldname": "Name"
-  },
-  {
-   "link_doctype": "Ad Creative",
-   "link_fieldname": "Name"
-  }
- ],
- "modified": "2026-01-08 12:53:43.206682",
+ "links": [],
+ "modified": "2026-01-20 13:46:09.919144",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ad Post",

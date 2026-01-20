@@ -5,49 +5,29 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "section_break_bdvd",
-  "name1",
-  "account",
-  "creative_type",
-  "description",
-  "caption",
-  "message",
-  "link",
-  "call_to_action",
-  "page",
-  "media",
-  "creative_id"
+  "basic_information_section",
+  "creative_name",
+  "creative_id",
+  "column_break_yifc",
+  "object_type",
+  "ad_setup_section",
+  "select_ad_type",
+  "multi_advertiser_ads",
+  "column_break_sbga",
+  "single_image_or_video",
+  "carousel",
+  "collection",
+  "section_break_vsyz",
+  "body",
+  "destination",
+  "title",
+  "link_url",
+  "column_break_sjrx",
+  "object_url",
+  "url_tags",
+  "call_to_action"
  ],
  "fields": [
-  {
-   "fieldname": "section_break_bdvd",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "name1",
-   "fieldtype": "Data",
-   "label": "Creative Name"
-  },
-  {
-   "fieldname": "description",
-   "fieldtype": "Small Text",
-   "label": "Description"
-  },
-  {
-   "fieldname": "caption",
-   "fieldtype": "Data",
-   "label": "Caption"
-  },
-  {
-   "fieldname": "message",
-   "fieldtype": "Small Text",
-   "label": "Message"
-  },
-  {
-   "fieldname": "link",
-   "fieldtype": "Data",
-   "label": "Link"
-  },
   {
    "fieldname": "call_to_action",
    "fieldtype": "Select",
@@ -55,59 +35,121 @@
    "options": "Learn More\nShop Now\nSign Up"
   },
   {
-   "fieldname": "page",
-   "fieldtype": "Select",
-   "label": "Page"
-  },
-  {
-   "fieldname": "media",
-   "fieldtype": "Table",
-   "label": "Media",
-   "options": "Ad Media"
-  },
-  {
-   "fieldname": "account",
-   "fieldtype": "Link",
-   "label": "Account",
-   "options": "Ads Account Integration"
-  },
-  {
-   "fieldname": "creative_type",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Creative Type"
-  },
-  {
    "fieldname": "creative_id",
    "fieldtype": "Data",
    "label": "Creative ID",
    "read_only": 1
+  },
+  {
+   "fieldname": "basic_information_section",
+   "fieldtype": "Section Break",
+   "label": "Basic Information"
+  },
+  {
+   "fieldname": "object_type",
+   "fieldtype": "Select",
+   "label": "Object Type",
+   "options": "PAGE\nAPPLICATION\nDOMAIN\nPRODUCT_ITEM\nPRODUCT_SET\nOFFER\nEVENT\nSHARE\nSTATUS\nVIDEO\nUNKNOWN"
+  },
+  {
+   "fieldname": "column_break_yifc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_vsyz",
+   "fieldtype": "Section Break",
+   "label": "Destination"
+  },
+  {
+   "fieldname": "body",
+   "fieldtype": "Data",
+   "label": "Body"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title"
+  },
+  {
+   "fieldname": "link_url",
+   "fieldtype": "Data",
+   "label": "Link URL"
+  },
+  {
+   "fieldname": "object_url",
+   "fieldtype": "Data",
+   "label": "Object URL"
+  },
+  {
+   "fieldname": "url_tags",
+   "fieldtype": "Data",
+   "label": "URL Tags"
+  },
+  {
+   "fieldname": "column_break_sjrx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ad_setup_section",
+   "fieldtype": "Section Break",
+   "label": "Ad setup"
+  },
+  {
+   "fieldname": "select_ad_type",
+   "fieldtype": "Select",
+   "label": "Select Ad Type",
+   "options": "Create ad\nUse existing post\nUse Creative Hub mockup"
+  },
+  {
+   "default": "0",
+   "fieldname": "multi_advertiser_ads",
+   "fieldtype": "Check",
+   "label": "Multi-advertiser ads"
+  },
+  {
+   "fieldname": "column_break_sbga",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "single_image_or_video",
+   "fieldtype": "Check",
+   "label": "Single Image or Video"
+  },
+  {
+   "default": "0",
+   "fieldname": "carousel",
+   "fieldtype": "Check",
+   "label": "Carousel"
+  },
+  {
+   "default": "0",
+   "fieldname": "collection",
+   "fieldtype": "Check",
+   "label": "Collection"
+  },
+  {
+   "fieldname": "destination",
+   "fieldtype": "Select",
+   "label": "Destination",
+   "options": "Instant Experience\nWebsite\nCall\nMessaging Apps"
+  },
+  {
+   "fieldname": "creative_name",
+   "fieldtype": "Data",
+   "label": "Creative Name"
   }
  ],
- "grid_page_length": 50,
  "index_web_pages_for_search": 1,
+ "istable": 1,
  "links": [],
- "modified": "2026-01-12 20:28:39.350663",
+ "modified": "2026-01-20 13:46:21.713366",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ad Creative",
  "owner": "Administrator",
- "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
-  }
- ],
+ "permissions": [],
  "row_format": "Dynamic",
- "rows_threshold_for_grid_search": 20,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

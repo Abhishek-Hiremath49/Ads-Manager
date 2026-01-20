@@ -7,8 +7,8 @@ frappe.ui.form.on('Ads Setting', {
             frappe.set_route('List', 'Ads Account Integration');
         }, __("Action"));
 
-        frm.add_custom_button(__('View Campaigns'), function () {
-            frappe.set_route('List', 'Ad Campaign', { status: 'Scheduled' });
+        frm.add_custom_button(__('View Ad Posts'), function () {
+            frappe.set_route('List', 'Ad Post');
         }, __("Action"));
 
         frm.add_custom_button(__('Reset Daily Counters'), function () {

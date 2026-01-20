@@ -41,10 +41,30 @@ frappe.ui.form.on('Ads Account Integration', {
     connect_account: function (frm) {
         // Call OAuth initiation
         frappe.call({
-            method: 'ads_manager.ads_manager.api.oauth.get_facebook_oauth_url',
+            method: 'ads_manager.ads_manager.api.oauth.initiate_oauth',
+            args: {
+                platform: frm.doc.platform,
+                integration: frm.doc.name
+            },
             callback: function (r) {
-                if (r.message.oauth_url) {
-                    window.location.href = r.message.oauth_url;
+                if (r.message && r.message.authorization_url) {
+                    const popup = window.open(
+                        r.message.authorization_url,
+                        'oauth_popup',
+                        'width=600,height=700,scrollbars=yes'
+                    );
+
+                    frappe.show_alert({
+                        message: __('Complete authorization in the popup window'),
+                        indicator: 'blue'
+                    });
+
+                    const pollTimer = setInterval(function () {
+                        if (popup.closed) {
+                            clearInterval(pollTimer);
+                            frm.reload_doc();
+                        }
+                    }, 1000);
                 }
             }
         });

@@ -6,35 +6,71 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "section_break_ksmk",
-  "name1",
+  "basic_info_section",
+  "enable_ad_set",
+  "ad_set_name",
+  "adset_id",
+  "column_break_xlfk",
   "campaign",
-  "daily_budget",
-  "target",
-  "billing_event",
+  "effective_status",
   "status",
+  "budget_section",
+  "daily_budget",
+  "daily_spend_cap",
+  "daily_min_spend_target",
+  "max_budget_spend_percentage",
+  "daily_impressions",
+  "budget_remaining",
+  "recurring_budget_semantics",
+  "column_break_keio",
+  "lifetime_budget",
+  "lifetime_spend_cap",
+  "lifetime_min_spend_target",
+  "min_budget_spend_percentage",
+  "lifetime_impressions",
+  "existing_customer_budget_percentage",
+  "target_section",
+  "geo_location",
+  "gender",
+  "column_break_dlmy",
+  "age_min",
+  "age_max",
+  "bidding_section",
+  "bid_strategy",
   "bid_amount",
-  "adset_id"
+  "column_break_terp",
+  "billing_event",
+  "optimization_section",
+  "performance_goal",
+  "multi_optimization_goal_weight",
+  "column_break_qwos",
+  "optimization_sub_event",
+  "destination_type",
+  "targeting_section",
+  "start_time",
+  "created_time",
+  "time_start",
+  "column_break_icyg",
+  "end_time",
+  "updated_time",
+  "time_stop",
+  "placement_section",
+  "advantage_placements",
+  "manual_placement",
+  "devices",
+  "platforms_column",
+  "facebook",
+  "instgram",
+  "messenger",
+  "audience_network",
+  "whatsapp",
+  "threads"
  ],
  "fields": [
-  {
-   "fieldname": "section_break_ksmk",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "name1",
-   "fieldtype": "Data",
-   "label": "Name"
-  },
   {
    "fieldname": "daily_budget",
    "fieldtype": "Currency",
    "label": "Daily Budget"
-  },
-  {
-   "fieldname": "target",
-   "fieldtype": "Data",
-   "label": "Target"
   },
   {
    "fieldname": "billing_event",
@@ -46,7 +82,8 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "ACTIVE\nPAUSED\nDELETED\nARCHIVED"
+   "options": "ACTIVE\nPAUSED\nDELETED\nARCHIVED",
+   "read_only": 1
   },
   {
    "fieldname": "bid_amount",
@@ -64,12 +101,298 @@
    "fieldtype": "Link",
    "label": "Campaign",
    "options": "Ads Campaign"
+  },
+  {
+   "fieldname": "performance_goal",
+   "fieldtype": "Select",
+   "label": "Optimization Goal",
+   "options": "None\nMaximise reach of ads\nMaximise number of impression\nMaximise ad recall lift\nMaximise ThruPlay views\nMaximise 2-second continuous video plays\nMaximise number of landing page views\nMaximise number of link clicks\nMaximise daily unique reach\nMaximise number of conversations\nMaximise number of Instagram profile visits\nMaximise number of calls\nMaximise engagement with a post\nMaximise number of event responses\nMaximise number of app events\nMaximise reminders set\nMaximise number of Page likes\nMaximise number of leads\nMaximise number of conversion leads\nMaximise number of leads through messaging\nMaximise number of app installs\nMaximise value of conversions"
+  },
+  {
+   "fieldname": "bid_strategy",
+   "fieldtype": "Select",
+   "label": "Bid Strategy",
+   "options": "LOWEST_COST_WITHOUT_CAP\nLOWEST_COST_WITH_BID_CAP\nCOST_CAP\nLOWEST_COST_WITH_MIN_ROAS"
+  },
+  {
+   "fieldname": "daily_min_spend_target",
+   "fieldtype": "Currency",
+   "label": "Daily Min Spend Target"
+  },
+  {
+   "fieldname": "daily_spend_cap",
+   "fieldtype": "Currency",
+   "label": "Daily Spend Cap"
+  },
+  {
+   "fieldname": "lifetime_budget",
+   "fieldtype": "Currency",
+   "label": "Lifetime Budget"
+  },
+  {
+   "fieldname": "lifetime_min_spend_target",
+   "fieldtype": "Currency",
+   "label": "Lifetime Min Spend Target"
+  },
+  {
+   "fieldname": "lifetime_spend_cap",
+   "fieldtype": "Currency",
+   "label": "Lifetime Spend Cap"
+  },
+  {
+   "fieldname": "budget_remaining",
+   "fieldtype": "Currency",
+   "label": "Budget Remaining",
+   "read_only": 1
+  },
+  {
+   "fieldname": "daily_impressions",
+   "fieldtype": "Int",
+   "label": "Daily Impressions"
+  },
+  {
+   "fieldname": "lifetime_impressions",
+   "fieldtype": "Int",
+   "label": "Lifetime Impressions"
+  },
+  {
+   "fieldname": "existing_customer_budget_percentage",
+   "fieldtype": "Int",
+   "label": "Existing Customer Budget Percentage"
+  },
+  {
+   "fieldname": "max_budget_spend_percentage",
+   "fieldtype": "Int",
+   "label": "Max Budget Spend Percentage"
+  },
+  {
+   "fieldname": "min_budget_spend_percentage",
+   "fieldtype": "Int",
+   "label": "Min Budget Spend Percentage"
+  },
+  {
+   "default": "0",
+   "fieldname": "recurring_budget_semantics",
+   "fieldtype": "Check",
+   "label": "Recurring Budget Semantics"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_ad_set",
+   "fieldtype": "Check",
+   "label": "Enable Ad Set"
+  },
+  {
+   "fieldname": "column_break_xlfk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "effective_status",
+   "fieldtype": "Select",
+   "label": "Effective Status",
+   "options": "ACTIVE\nPAUSED\nDELETED\nARCHIVED\nCAMPAIGN_PAUSED\nADSET_PAUSED\nPENDING_REVIEW\nDISAPPROVED\nPREAPPROVED\nPENDING_BILLING_INFO\nIN_PROCESS\nWITH_ISSUES",
+   "read_only": 1
+  },
+  {
+   "fieldname": "basic_info_section",
+   "fieldtype": "Section Break",
+   "label": "Basic Info"
+  },
+  {
+   "fieldname": "budget_section",
+   "fieldtype": "Section Break",
+   "label": "Budget"
+  },
+  {
+   "fieldname": "bidding_section",
+   "fieldtype": "Section Break",
+   "label": "Bidding"
+  },
+  {
+   "fieldname": "optimization_section",
+   "fieldtype": "Section Break",
+   "label": "Optimization"
+  },
+  {
+   "fieldname": "optimization_sub_event",
+   "fieldtype": "Select",
+   "label": "Optimization Sub Event",
+   "options": "NONE\nVIDEO_SOUND_ON\nTRIP_CONSIDERATION\nTRAVEL_INTENT\nTRAVEL_INTENT_NO_DESTINATION_INTENT\nTRAVEL_INTENT_BUCKET_01\nTRAVEL_INTENT_BUCKET_02\nTRAVEL_INTENT_BUCKET_03\nTRAVEL_INTENT_BUCKET_04\nTRAVEL_INTENT_BUCKET_05\nPOST_INTERACTION"
+  },
+  {
+   "fieldname": "multi_optimization_goal_weight",
+   "fieldtype": "Select",
+   "label": "Multi Optimization Goal Weight",
+   "options": "UNDEFINED\nBALANCED\nPREFER_INSTALL\nPREFER_EVENT"
+  },
+  {
+   "fieldname": "destination_type",
+   "fieldtype": "Select",
+   "label": "Destination Type",
+   "options": "WEBSITE\nAPP\nMESSENGER\nAPPLINKS_AUTOMATIC\nWHATSAPP\nINSTAGRAM_DIRECT\nFACEBOOK\nMESSAGING_MESSENGER_WHATSAPP\nMESSAGING_INSTAGRAM_DIRECT_MESSENGER\nMESSAGING_INSTAGRAM_DIRECT_MESSENGER_WHATSAPP\nMESSAGING_INSTAGRAM_DIRECT_WHATSAPP\nSHOP_AUTOMATIC\nON_AD\nON_POST\nON_EVENT\nON_VIDEO\nON_PAGE\nINSTAGRAM_PROFILE\nFACEBOOK_PAGE\nINSTAGRAM_PROFILE_AND_FACEBOOK_PAGE\nINSTAGRAM_LIVE\nFACEBOOK_LIVE\nIMAGINE"
+  },
+  {
+   "fieldname": "targeting_section",
+   "fieldtype": "Section Break",
+   "label": "Targeting"
+  },
+  {
+   "fieldname": "start_time",
+   "fieldtype": "Datetime",
+   "label": "Start Time"
+  },
+  {
+   "fieldname": "end_time",
+   "fieldtype": "Datetime",
+   "label": "End Time"
+  },
+  {
+   "fieldname": "created_time",
+   "fieldtype": "Datetime",
+   "label": "Created Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "updated_time",
+   "fieldtype": "Datetime",
+   "label": "Updated Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "time_start",
+   "fieldtype": "Datetime",
+   "label": "Time Start"
+  },
+  {
+   "fieldname": "time_stop",
+   "fieldtype": "Datetime",
+   "label": "Time Stop"
+  },
+  {
+   "fieldname": "column_break_keio",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "target_section",
+   "fieldtype": "Section Break",
+   "label": "Target"
+  },
+  {
+   "fieldname": "geo_location",
+   "fieldtype": "Link",
+   "label": "Geo Location",
+   "options": "Country"
+  },
+  {
+   "default": "18",
+   "fieldname": "age_min",
+   "fieldtype": "Int",
+   "label": "Age Min"
+  },
+  {
+   "default": "65",
+   "fieldname": "age_max",
+   "fieldtype": "Int",
+   "label": "Age Max"
+  },
+  {
+   "default": "All",
+   "fieldname": "gender",
+   "fieldtype": "Select",
+   "label": "Gender",
+   "options": "Male\nFemale\nAll",
+   "sort_options": 1
+  },
+  {
+   "fieldname": "column_break_dlmy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_terp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_qwos",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_icyg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "placement_section",
+   "fieldtype": "Section Break",
+   "label": "Placement"
+  },
+  {
+   "default": "0",
+   "fieldname": "advantage_placements",
+   "fieldtype": "Check",
+   "label": "Advantage + placements (recommended)"
+  },
+  {
+   "default": "0",
+   "fieldname": "manual_placement",
+   "fieldtype": "Check",
+   "label": "Manual Placement"
+  },
+  {
+   "fieldname": "devices",
+   "fieldtype": "Select",
+   "label": "Devices",
+   "options": "All devices\nMobile\nDesktop"
+  },
+  {
+   "fieldname": "platforms_column",
+   "fieldtype": "Column Break",
+   "label": "Platforms"
+  },
+  {
+   "default": "0",
+   "fieldname": "facebook",
+   "fieldtype": "Check",
+   "label": "Facebook"
+  },
+  {
+   "default": "0",
+   "fieldname": "instgram",
+   "fieldtype": "Check",
+   "label": "Instgram"
+  },
+  {
+   "default": "0",
+   "fieldname": "messenger",
+   "fieldtype": "Check",
+   "label": "Messenger"
+  },
+  {
+   "default": "0",
+   "fieldname": "audience_network",
+   "fieldtype": "Check",
+   "label": "Audience Network"
+  },
+  {
+   "default": "0",
+   "fieldname": "whatsapp",
+   "fieldtype": "Check",
+   "label": "WhatsApp"
+  },
+  {
+   "default": "0",
+   "fieldname": "threads",
+   "fieldtype": "Check",
+   "label": "Threads"
+  },
+  {
+   "fieldname": "ad_set_name",
+   "fieldtype": "Data",
+   "label": "Ad Set Name"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-12 14:49:09.199350",
+ "modified": "2026-01-20 13:45:45.749818",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ad Set",

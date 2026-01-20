@@ -12,7 +12,9 @@
   "column_break_main",
   "media_hash",
   "file_size",
-  "uploaded_to_platform"
+  "uploaded_to_platform",
+  "section_break_qizc",
+  "image_url"
  ],
  "fields": [
   {
@@ -51,13 +53,22 @@
    "fieldtype": "Check",
    "label": "Uploaded",
    "read_only": 1
+  },
+  {
+   "fieldname": "section_break_qizc",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "image_url",
+   "fieldtype": "Long Text",
+   "label": "Image URL"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-01-03 15:51:10.366475",
+ "modified": "2026-01-19 22:41:10.000467",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ad Media",

@@ -105,7 +105,7 @@
    "collapsible": 1,
    "fieldname": "facebook_section",
    "fieldtype": "Section Break",
-   "label": "Facebook Settings"
+   "label": "Meta Settings"
   },
   {
    "fieldname": "facebook_instructions",
@@ -132,7 +132,8 @@
    "default": "25",
    "fieldname": "instagram_daily_limit",
    "fieldtype": "Int",
-   "label": "Instagram Daily Limit"
+   "label": "Instagram Daily Post Limit",
+   "read_only": 1
   },
   {
    "default": "0",
@@ -149,13 +150,15 @@
    "default": "10",
    "fieldname": "instagram_story_limit",
    "fieldtype": "Int",
-   "label": "Instagram Story Limit"
+   "label": "Instagram Story Limit",
+   "read_only": 1
   },
   {
    "default": "15",
    "fieldname": "instagram_reel_limit",
    "fieldtype": "Int",
-   "label": "Instagram Reel Limit"
+   "label": "Instagram Reel Limit",
+   "read_only": 1
   },
   {
    "collapsible": 1,
@@ -174,7 +177,8 @@
    "default": "200",
    "fieldname": "facebook_api_limit",
    "fieldtype": "Int",
-   "label": "Facebook API Limit"
+   "label": "Facebook API Limit",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_limits",
@@ -287,7 +291,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-01-12 13:24:52.353844",
+ "modified": "2026-01-19 10:03:50.568909",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ads Setting",
