@@ -19,7 +19,9 @@
   "select_facebook_page",
   "select_instagram_account",
   "section_break_nhxa",
-  "ad_creative"
+  "ad_creative",
+  "section_break_drqh",
+  "media"
  ],
  "fields": [
   {
@@ -102,12 +104,22 @@
    "fieldname": "ad_name",
    "fieldtype": "Data",
    "label": "Ad Name"
+  },
+  {
+   "fieldname": "section_break_drqh",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "media",
+   "fieldtype": "Table",
+   "label": "Media",
+   "options": "Ad Media"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-20 13:46:09.919144",
+ "modified": "2026-01-21 15:08:00.309215",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ad Post",

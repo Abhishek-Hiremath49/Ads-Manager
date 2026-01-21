@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 @dataclass
 class PublishResult:
     success: bool
-    campaign_id: Optional[str] = None
-    campaign_url: Optional[str] = None
+    id: Optional[str] = None
+    url: Optional[str] = None
     error_message: Optional[str] = None
     raw_response: Optional[Dict] = None
 

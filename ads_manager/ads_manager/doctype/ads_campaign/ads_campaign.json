@@ -84,7 +84,7 @@
    "fieldname": "objective",
    "fieldtype": "Select",
    "label": "Campaign Objective",
-   "options": "Awareness\nTraffic\nEngagement\nLeads\nSales",
+   "options": "Awareness\nTraffic\nEngagement\nLeads\nSales\nApp promotion",
    "sort_options": 1
   },
   {
@@ -204,7 +204,7 @@
    "fieldname": "category",
    "fieldtype": "Select",
    "label": "Category",
-   "options": "Housing\nEmployment\nFinancial products and services",
+   "options": "Housing\nEmployment\nFinancial products and services\nSocial issues, elections or politics",
    "sort_options": 1
   },
   {
@@ -249,7 +249,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-20 18:56:22.164687",
+ "modified": "2026-01-21 10:40:12.817109",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ads Campaign",
