@@ -15,10 +15,13 @@ logger = logging.getLogger(__name__)
 @dataclass
 class PublishResult:
     success: bool
-    id: Optional[str] = None
+    campaign_id: Optional[str] = None
     url: Optional[str] = None
     error_message: Optional[str] = None
     raw_response: Optional[Dict] = None
+    adset_id: Optional[str] = None
+    ad_id: Optional[str] = None
+    creative_id: Optional[str] = None
 
 
 @dataclass

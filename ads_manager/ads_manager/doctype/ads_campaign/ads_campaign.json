@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "format:CAMP-{campaign_name}",
  "creation": "2026-01-10 21:43:14.465436",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -249,10 +250,11 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-21 10:40:12.817109",
+ "modified": "2026-01-26 10:11:53.391263",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ads Campaign",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

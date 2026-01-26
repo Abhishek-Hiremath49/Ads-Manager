@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "hash",
+ "autoname": "format:AD-SET-{ad_set_name}",
  "creation": "2026-01-07 20:45:11.610681",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -404,11 +404,11 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-21 13:38:23.945012",
+ "modified": "2026-01-26 10:14:45.044599",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ad Set",
- "naming_rule": "Random",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

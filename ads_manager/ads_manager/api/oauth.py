@@ -10,6 +10,7 @@ Features:
 - Secure state validation
 - Token exchange and refresh
 - Account selection and connection
+- Page access token storage
 - Comprehensive error handling and logging
 """
 
@@ -176,10 +177,14 @@ def _handle_mata_callback(platform: str):
             params={"access_token": user_token, "fields": "id,name,email"},
         ).json()
 
+        # Fetch pages WITH their access tokens
         pages = (
             requests.get(
                 f"https://graph.facebook.com/{api_version}/me/accounts",
-                params={"access_token": user_token, "fields": "id,name,access_token,picture{url},fan_count"},
+                params={
+                    "access_token": user_token, 
+                    "fields": "id,name,access_token,picture{url},fan_count"  # Include access_token!
+                },
             )
             .json()
             .get("data", [])
@@ -211,7 +216,7 @@ def _handle_mata_callback(platform: str):
             "user": cache_data["user"],
             "user_access_token": user_token,
             "expires_in": expires_in,
-            "pages": pages,
+            "pages": pages,  # This now includes access_token for each page
             "ad_accounts": ad_accounts,
             "auth_user_id": me_data.get("id"),
             "auth_user_name": me_data.get("name"),
@@ -226,8 +231,6 @@ def _handle_mata_callback(platform: str):
         # If single account, connect directly
         if len(ad_accounts) == 1:
             try:
-                # Don't set user here - do it in the connection function
-                # This avoids cross-site cookie issues
                 result = _connect_ad_account(session_key, 0)
                 location = _oauth_success_redirect(result.name)
                 frappe.local.response.update({"type": "redirect", "location": location})
@@ -237,8 +240,6 @@ def _handle_mata_callback(platform: str):
                 return _oauth_error_redirect("Failed to connect account automatically")
 
         # Multiple accounts - redirect to selection page
-        # Don't call frappe.set_user() here - avoid cross-site cookie issues
-        # The user context will be restored when they return to the frappe app
         location = f"/select-ads-account?session={quoted(session_key)}&platform={quoted(platform)}"
         frappe.local.response.update(
             {
@@ -322,9 +323,9 @@ def get_available_ad_accounts(session_key: str) -> dict:
 
 
 @frappe.whitelist()
-def connect_ad_account(session_key: str, account_index: int) -> dict:
+def connect_ad_account(session_key: str, index: int):
     """Connect a specific ad account from selection."""
-    return _connect_ad_account(session_key, int(account_index))
+    return _connect_ad_account(session_key, int(index))
 
 
 def _connect_ad_account(session_key: str, index: int):
@@ -344,7 +345,6 @@ def _connect_ad_account(session_key: str, index: int):
         frappe.throw(_("Session expired"))
 
     # Set user context for this operation
-    # This is safe here because we're already back in the same-site context
     user = cache_data.get("user")
     if user:
         frappe.set_user(user)
@@ -375,35 +375,13 @@ def _connect_ad_account(session_key: str, index: int):
         auth_user_id=cache_data.get("auth_user_id"),
         auth_user_name=cache_data.get("auth_user_name"),
         auth_user_email=cache_data.get("ads_data", {}).get("email"),
-        long_lived_token=cache_data["user_access_token"],
+        pages_data=cache_data.get("pages", []),  # Pass pages with tokens
     )
 
     # Clean up session cache
     frappe.cache().delete_value(f"meta_ads_{session_key}")
 
     return integration
-
-
-def _get_available_pages(access_token: str) -> list:
-    """Fetch Facebook pages for the authenticated user."""
-    try:
-        response = requests.get(
-            f"https://graph.facebook.com/{api_version}/me/accounts",
-            params={
-                "access_token": access_token,
-                "fields": "id,name,access_token,picture{url},fan_count",
-                "limit": 100,
-            },
-            timeout=REQUEST_TIMEOUT,
-        )
-        response.raise_for_status()
-        return response.json().get("data", [])
-    except requests.RequestException as e:
-        logger.error(f"Failed to fetch user pages: {str(e)}")
-        return []
-    except Exception as e:
-        logger.error(f"Unexpected error fetching pages: {str(e)}")
-        return []
 
 
 def _save_ads_integration(
@@ -424,11 +402,11 @@ def _save_ads_integration(
     auth_user_id: str = None,
     auth_user_name: str = None,
     auth_user_email: str = None,
-    long_lived_token: str = None,
+    pages_data: list = None,
 ) -> dict:
     """
     Create or update Ads Account Integration document.
-
+    Now stores page access tokens in Facebook Pages child table.
     """
     try:
         # Check if integration already exists
@@ -484,19 +462,35 @@ def _save_ads_integration(
         if auth_user_email:
             integration.authorized_user_email = auth_user_email
 
-        # === FETCH AND STORE FACEBOOK PAGES (using integration only) ===
-        if long_lived_token:
-            pages = _get_available_pages(long_lived_token)
+        # === STORE FACEBOOK PAGES WITH ACCESS TOKENS ===
+        if pages_data:
             # Clear existing pages to avoid duplicates on reconnect
             integration.fb_pages = []
-            for page in pages:
-                picture_url = (
-                    f"https://graph.facebook.com/{page.get('id')}/picture?type=square&height=100&width=100"
-                )
+            
+            for page in pages_data:
+                page_id = page.get("id")
+                page_name = page.get("name")
+                page_access_token = page.get("access_token")  # CRITICAL: Get page token
+                fan_count = page.get("fan_count", 0)
+                
+                # Get picture URL
+                picture_url = page.get("picture", {}).get("data", {}).get("url")
+                if not picture_url:
+                    picture_url = f"https://graph.facebook.com/{page_id}/picture?type=square&height=100&width=100"
+                
+                # Append page with its access token
                 integration.append(
                     "fb_pages",
-                    {"page_name": page.get("name"), "page_id": page.get("id"), "image": picture_url},
+                    {
+                        "page_id": page_id,
+                        "page_name": page_name,
+                        "access_token": page_access_token,  # STORE PAGE TOKEN!
+                        "fan_count": fan_count,
+                        "image": picture_url,
+                    }
                 )
+            
+            logger.info(f"Stored {len(pages_data)} Facebook pages with access tokens")
 
         # Save everything (main doc + child table)
         integration.save(ignore_permissions=True)
@@ -593,88 +587,3 @@ def _oauth_success_redirect(integration_name: str):
     frappe.local.response["type"] = "redirect"
     frappe.local.response["location"] = location
     return location
-
-
-# @frappe.whitelist()
-# def validate_credentials(integration: str) -> dict:
-#     """
-#     Validate integration credentials by testing API connection.
-
-#     Args:
-#         integration: Integration name/ID
-
-#     Returns:
-#         Dictionary with validation result
-#     """
-#     try:
-#         if not frappe.has_permission("Ads Account Integration", "read", integration):
-#             frappe.throw(_("You don't have permission to access this integration"))
-
-#         integration_doc = frappe.get_doc("Ads Account Integration", integration)
-
-#         if not integration_doc.enabled or not integration_doc.access_token:
-#             return {
-#                 "success": False,
-#                 "message": _("Integration is not active or has no access token"),
-#             }
-
-#         provider = get_provider(integration_doc.platform)(integration)
-#         result = provider.validate_connection()
-
-#         logger.info(f"Credentials validation for {integration}: {result.get('success', False)}")
-
-#         return {
-#             "success": result.get("success", False),
-#             "message": result.get("message", _("Validation failed")),
-#             "account_name": result.get("account_name", "Unknown"),
-#         }
-
-#     except frappe.ValidationError:
-#         raise
-#     except Exception as e:
-#         logger.error(f"Credential validation failed for {integration}: {str(e)}")
-#         frappe.log_error(frappe.get_traceback(), "Credential Validation Error")
-#         return {
-#             "success": False,
-#             "error": str(e),
-#             "message": _("Failed to validate credentials"),
-#         }
-
-# @frappe.whitelist()
-# def sync_campaigns(integration: str) -> dict:
-#     """
-#     Sync campaigns from ad platform.
-
-#     Args:
-#         integration: Integration name/ID
-
-#     Returns:
-#         Dictionary with sync result
-#     """
-#     try:
-#         if not frappe.has_permission("Ads Account Integration", "read", integration):
-#             frappe.throw(_("You don't have permission to access this integration"))
-
-#         integration_doc = frappe.get_doc("Ads Account Integration", integration)
-#         provider = get_provider(integration_doc.platform)(integration)
-#         result = provider.sync_campaigns()
-
-#         logger.info(f"Campaign sync for {integration}: {result.get('success', False)}")
-
-#         return {
-#             "success": result.get("success", False),
-#             "message": result.get("message", _("Sync completed")),
-#             "error_message": result.get("error_message", ""),
-#             "campaigns_synced": result.get("campaigns_synced", 0),
-#         }
-
-#     except frappe.ValidationError:
-#         raise
-#     except Exception as e:
-#         logger.error(f"Campaign sync failed for {integration}: {str(e)}")
-#         frappe.log_error(frappe.get_traceback(), "Campaign Sync Error")
-#         return {
-#             "success": False,
-#             "error_message": str(e),
-#             "message": _("Failed to sync campaigns"),
-#         }

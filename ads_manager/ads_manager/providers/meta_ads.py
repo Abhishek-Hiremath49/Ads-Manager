@@ -113,7 +113,7 @@ class MetaAdsProvider(BaseProvider):
 
             if campaign_id:
                 logger.info(f"✅ Campaign created: {campaign_id}")
-                return PublishResult(success=True, id=campaign_id, raw_response=response)
+                return PublishResult(success=True, campaign_id=campaign_id, raw_response=response)
             else:
                 raise ValueError(f"No campaign ID in response: {response}")
 
@@ -141,9 +141,9 @@ class MetaAdsProvider(BaseProvider):
             response = self._make_request("POST", endpoint, json_data=payload)
             adset_id = response.get("id")
 
-            if ad_set_id:
+            if adset_id:
                 logger.info(f"✅ Ad Set created: {adset_id}")
-                return PublishResult(success=True, id=adset_id, raw_response=response)
+                return PublishResult(success=True, adset_id=adset_id, raw_response=response)
             else:
                 raise ValueError(f"No ad set ID in response: {response}")
 
@@ -151,13 +151,13 @@ class MetaAdsProvider(BaseProvider):
             error_msg = str(e)
             logger.error(f"Ad Set creation FAILED: {error_msg}")
             frappe.log_error(
-                message=error_msg,
-                title="Meta Ad Set Creation Failed",
-                content={
+                message={
+                    "error": error_msg,
                     "account_id": self.account_id,
                     "sent_payload": payload,
                     "meta_error": str(e),
                 },
+                title="Meta Ad Set Creation Failed",
             )
             return PublishResult(success=False, error_message=error_msg)
 
@@ -165,80 +165,134 @@ class MetaAdsProvider(BaseProvider):
         """Upload image to Meta and return hash"""
         endpoint = f"{self.account_id}/adimages"
 
-        # Assume payload has 'filename' with full path
         filename = payload.get("filename")
         if not filename:
-            raise ValueError("filename required for image upload")
+            raise ValueError("Filename is required for image upload")
 
-        with open(filename, "rb") as f:
-            files = {"file": f}
-            response = self._make_request("POST", endpoint, files=files)  # Use files for multipart
+        logger.info(f"Uploading image: {filename}")
+
+        try:
+            with open(filename, "rb") as f:
+                files = {"file": f}
+                response = self._make_request("POST", endpoint, files=files)
 
             if "images" in response:
                 image_data = response["images"]
+                # Get first image hash from response
                 image_hash = list(image_data.values())[0].get("hash")
+                
                 if image_hash:
-                    # Store image_hash in campaign_id field since PublishResult doesn't have image_hash
-                    return PublishResult(success=True, campaign_id=image_hash)
+                    logger.info(f"✅ Image uploaded successfully: {image_hash}")
+                    # Store hash in campaign_id field (PublishResult doesn't have image_hash)
+                    return PublishResult(
+                        success=True,
+                        campaign_id=image_hash,
+                        raw_response=response
+                    )
                 else:
                     raise ValueError("No image hash in response")
             else:
-                raise ValueError("Image upload failed")
+                raise ValueError(f"Image upload failed: {response}")
 
-    def create_creative(self, payload: Dict) -> PublishResult:
-        """Create Meta creative - payload should be pre-validated and mapped by caller"""
+        except FileNotFoundError:
+            error_msg = f"File not found: {filename}"
+            logger.error(f"❌ {error_msg}")
+            return PublishResult(success=False, error_message=error_msg)
+        
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f"❌ Image upload failed: {error_msg}")
+            
+            frappe.log_error(
+                title="Meta Image Upload Failed",
+                message=(
+                    f"Filename: {filename}\n"
+                    f"Error: {error_msg}\n"
+                    f"Traceback: {frappe.get_traceback()}"
+                )
+            )
+            
+            return PublishResult(success=False, error_message=error_msg)
+
+    def create_creative(self, payload: Dict, page_access_token: str = None) -> PublishResult:
+        """Create Meta ad creative
+        
+        Args:
+            payload: Creative payload with object_story_spec
+            page_access_token: Page access token (not used for API call, only for reference)
+        """
         endpoint = f"{self.account_id}/adcreatives"
 
-        logger.info(f"Creating creative on {endpoint}: {payload}")
+        logger.info(f"Creating creative with payload: {payload}")
 
         try:
+            # Always use account access token for creative creation
+            # page_access_token is only used in the payload structure, not for API authentication
             response = self._make_request("POST", endpoint, json_data=payload)
             creative_id = response.get("id")
 
             if creative_id:
-                logger.info(f"✅ Creative created: {creative_id}")
-                return PublishResult(success=True, creative_id=creative_id, raw_response=response)
+                logger.info(f"✅ Creative created successfully: {creative_id}")
+                return PublishResult(
+                    success=True,
+                    creative_id=creative_id,
+                    raw_response=response
+                )
             else:
                 raise ValueError(f"No creative ID in response: {response}")
 
         except Exception as e:
             error_msg = str(e)
-            logger.error(f"Creative creation FAILED: {error_msg}")
+            logger.error(f"❌ Creative creation failed: {error_msg}")
+            
             frappe.log_error(
                 title="Meta Creative Creation Failed",
-                message=f"{error_msg}\n\nAccount ID: {self.account_id}\n\nPayload: {str(payload)}"
+                message=(
+                    f"Account ID: {self.account_id}\n"
+                    f"Payload: {payload}\n"
+                    f"Error: {error_msg}\n"
+                    f"Traceback: {frappe.get_traceback()}"
+                )
             )
+            
             return PublishResult(success=False, error_message=error_msg)
 
     def create_ad(self, payload: Dict) -> PublishResult:
-        """Create Meta ad - payload should be pre-validated and mapped by caller"""
+        """Create Meta ad"""
         endpoint = f"{self.account_id}/ads"
 
-        logger.info(f"Creating ad on {endpoint}: {payload}")
+        logger.info(f"Creating ad with payload: {payload}")
 
         try:
             response = self._make_request("POST", endpoint, json_data=payload)
             ad_id = response.get("id")
 
             if ad_id:
-                logger.info(f"✅ Ad created: {ad_id}")
-                return PublishResult(success=True, campaign_id=ad_id, raw_response=response)
+                logger.info(f"✅ Ad created successfully: {ad_id}")
+                return PublishResult(
+                    success=True,
+                    ad_id=ad_id,  # Store ad_id in campaign_id field
+                    raw_response=response
+                )
             else:
                 raise ValueError(f"No ad ID in response: {response}")
 
         except Exception as e:
             error_msg = str(e)
-            logger.error(f"Ad creation FAILED: {error_msg}")
+            logger.error(f"❌ Ad creation failed: {error_msg}")
+            
             frappe.log_error(
-                message=error_msg,
                 title="Meta Ad Creation Failed",
-                content={
-                    "account_id": self.account_id,
-                    "sent_payload": payload,
-                    "meta_error": str(e),
-                },
+                message=(
+                    f"Account ID: {self.account_id}\n"
+                    f"Payload: {payload}\n"
+                    f"Error: {error_msg}\n"
+                    f"Traceback: {frappe.get_traceback()}"
+                )
             )
+            
             return PublishResult(success=False, error_message=error_msg)
+        
     # Required abstract methods (minimal implementations)
     def fetch_account_analytics(self) -> AnalyticsResult:
         try:

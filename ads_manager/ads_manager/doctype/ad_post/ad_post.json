@@ -12,8 +12,9 @@
   "ad_set",
   "column_break_babw",
   "ads_account",
-  "campagin",
+  "campaign",
   "status",
+  "ad_id",
   "section_break_oajm",
   "enable_partnership_ad",
   "select_facebook_page",
@@ -27,12 +28,6 @@
   {
    "fieldname": "section_break_jyzl",
    "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "campagin",
-   "fieldtype": "Link",
-   "label": "Campagin",
-   "options": "Ads Campaign"
   },
   {
    "fieldname": "ads_account",
@@ -82,7 +77,7 @@
   },
   {
    "fieldname": "select_facebook_page",
-   "fieldtype": "Data",
+   "fieldtype": "Select",
    "label": "Select Facebook Page"
   },
   {
@@ -114,12 +109,23 @@
    "fieldtype": "Table",
    "label": "Media",
    "options": "Ad Media"
+  },
+  {
+   "fieldname": "ad_id",
+   "fieldtype": "Data",
+   "label": "Ad Id"
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Link",
+   "label": "Campaign",
+   "options": "Ads Campaign"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-21 15:08:00.309215",
+ "modified": "2026-01-25 22:25:36.101658",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ad Post",
