@@ -15,7 +15,6 @@
   "is_adset_budget_sharing_enabled",
   "campaign_name",
   "marketing_campaign",
-  "status",
   "campaign_details_section",
   "choose_buying_type",
   "objective",
@@ -55,8 +54,9 @@
   {
    "fieldname": "platform",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Platform",
-   "options": "Facebook\nInstagram"
+   "options": "\nFacebook\nInstagram"
   },
   {
    "allow_in_quick_entry": 1,
@@ -71,14 +71,6 @@
    "fieldtype": "Link",
    "label": "Account",
    "options": "Ads Account Integration"
-  },
-  {
-   "default": "Paused",
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Status",
-   "options": "\nActive\nPaused\nCompleted",
-   "read_only": 1
   },
   {
    "allow_in_quick_entry": 1,
@@ -103,6 +95,7 @@
   {
    "fieldname": "marketing_campaign",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Marketing Campaign",
    "options": "Marketing Campaign"
   },
@@ -195,6 +188,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "collapsible": 1,
    "description": "Declare if your ads are related to financial products and services, employment, housing, social issues, elections or politics to help prevent ad rejections. Requirements differ by country.",
    "fieldname": "special_ad_categories_section",
    "fieldtype": "Section Break",
@@ -229,12 +223,14 @@
    "fieldtype": "HTML"
   },
   {
+   "collapsible": 1,
    "description": "Distribute your budget across ad sets to get more results. You can control spending for each ad set. ",
    "fieldname": "advantage_campaign",
    "fieldtype": "Section Break",
    "label": "Advantage+Campaign Budget"
   },
   {
+   "collapsible": 1,
    "fieldname": "budget_scheduling_section",
    "fieldtype": "Section Break",
    "label": "Budget scheduling"
@@ -250,7 +246,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-26 10:11:53.391263",
+ "modified": "2026-01-29 13:50:20.933658",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ads Campaign",

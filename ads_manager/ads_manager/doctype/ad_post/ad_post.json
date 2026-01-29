@@ -83,6 +83,7 @@
   {
    "fieldname": "select_instagram_account",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Select Instagram Account"
   },
   {
@@ -113,7 +114,8 @@
   {
    "fieldname": "ad_id",
    "fieldtype": "Data",
-   "label": "Ad Id"
+   "label": "Ad Id",
+   "read_only": 1
   },
   {
    "fieldname": "campaign",
@@ -125,7 +127,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-25 22:25:36.101658",
+ "modified": "2026-01-29 14:59:51.761044",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ad Post",

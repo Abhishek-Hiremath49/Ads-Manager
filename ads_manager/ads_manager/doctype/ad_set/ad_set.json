@@ -13,7 +13,6 @@
   "column_break_xlfk",
   "campaign",
   "effective_status",
-  "status",
   "optimization_section",
   "performance_goal",
   "multi_optimization_goal_weight",
@@ -79,13 +78,6 @@
    "options": "\nAPP_INSTALLS\nCLICKS\nIMPRESSIONS\nLINK_CLICKS\nNONE\nOFFER_CLAIMS\nPAGE_LIKES\nPOST_ENGAGEMENT\nTHRUPLAY\nPURCHASE\nLISTING_INTERACTION"
   },
   {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Status",
-   "options": "ACTIVE\nPAUSED\nDELETED\nARCHIVED",
-   "read_only": 1
-  },
-  {
    "fieldname": "bid_amount",
    "fieldtype": "Currency",
    "label": "Bid Amount"
@@ -111,6 +103,7 @@
   {
    "fieldname": "bid_strategy",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Bid Strategy",
    "options": "LOWEST_COST_WITHOUT_CAP\nLOWEST_COST_WITH_BID_CAP\nCOST_CAP\nLOWEST_COST_WITH_MIN_ROAS"
   },
@@ -228,22 +221,26 @@
   {
    "fieldname": "optimization_sub_event",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Optimization Sub Event",
    "options": "NONE\nVIDEO_SOUND_ON\nTRIP_CONSIDERATION\nTRAVEL_INTENT\nTRAVEL_INTENT_NO_DESTINATION_INTENT\nTRAVEL_INTENT_BUCKET_01\nTRAVEL_INTENT_BUCKET_02\nTRAVEL_INTENT_BUCKET_03\nTRAVEL_INTENT_BUCKET_04\nTRAVEL_INTENT_BUCKET_05\nPOST_INTERACTION"
   },
   {
    "fieldname": "multi_optimization_goal_weight",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Multi Optimization Goal Weight",
    "options": "UNDEFINED\nBALANCED\nPREFER_INSTALL\nPREFER_EVENT"
   },
   {
    "fieldname": "destination_type",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Destination Type",
    "options": "WEBSITE\nAPP\nMESSENGER\nAPPLINKS_AUTOMATIC\nWHATSAPP\nINSTAGRAM_DIRECT\nFACEBOOK\nMESSAGING_MESSENGER_WHATSAPP\nMESSAGING_INSTAGRAM_DIRECT_MESSENGER\nMESSAGING_INSTAGRAM_DIRECT_MESSENGER_WHATSAPP\nMESSAGING_INSTAGRAM_DIRECT_WHATSAPP\nSHOP_AUTOMATIC\nON_AD\nON_POST\nON_EVENT\nON_VIDEO\nON_PAGE\nINSTAGRAM_PROFILE\nFACEBOOK_PAGE\nINSTAGRAM_PROFILE_AND_FACEBOOK_PAGE\nINSTAGRAM_LIVE\nFACEBOOK_LIVE\nIMAGINE"
   },
   {
+   "collapsible": 1,
    "fieldname": "targeting_section",
    "fieldtype": "Section Break",
    "label": "Targeting"
@@ -332,6 +329,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "collapsible": 1,
    "fieldname": "placement_section",
    "fieldtype": "Section Break",
    "label": "Placement"
@@ -404,7 +402,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-26 10:14:45.044599",
+ "modified": "2026-01-29 14:57:12.527716",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ad Set",

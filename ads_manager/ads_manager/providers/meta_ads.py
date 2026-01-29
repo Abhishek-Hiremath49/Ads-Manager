@@ -162,7 +162,7 @@ class MetaAdsProvider(BaseProvider):
             return PublishResult(success=False, error_message=error_msg)
 
     def upload_image(self, payload: Dict) -> PublishResult:
-        """Upload image to Meta and return hash"""
+        """Upload image to Meta and return URL"""
         endpoint = f"{self.account_id}/adimages"
 
         filename = payload.get("filename")
@@ -178,19 +178,23 @@ class MetaAdsProvider(BaseProvider):
 
             if "images" in response:
                 image_data = response["images"]
-                # Get first image hash from response
-                image_hash = list(image_data.values())[0].get("hash")
-                
-                if image_hash:
-                    logger.info(f"✅ Image uploaded successfully: {image_hash}")
-                    # Store hash in campaign_id field (PublishResult doesn't have image_hash)
+                # Get first image data from response
+                first_image = list(image_data.values())[0]
+
+                # Get the URL instead of hash
+                image_url = first_image.get("url")  # This is the actual image URL
+                image_hash = first_image.get("hash")  # Keep hash for reference
+
+                if image_url:
+                    logger.info(f"✅ Image uploaded successfully: {image_url}")
                     return PublishResult(
                         success=True,
-                        campaign_id=image_hash,
+                        image_hash=image_hash,
+                        image_url=image_url,  # Return URL in campaign_id field
                         raw_response=response
                     )
                 else:
-                    raise ValueError("No image hash in response")
+                    raise ValueError("No image URL in response")
             else:
                 raise ValueError(f"Image upload failed: {response}")
 
@@ -198,11 +202,11 @@ class MetaAdsProvider(BaseProvider):
             error_msg = f"File not found: {filename}"
             logger.error(f"❌ {error_msg}")
             return PublishResult(success=False, error_message=error_msg)
-        
+
         except Exception as e:
             error_msg = str(e)
             logger.error(f"❌ Image upload failed: {error_msg}")
-            
+
             frappe.log_error(
                 title="Meta Image Upload Failed",
                 message=(
@@ -211,9 +215,9 @@ class MetaAdsProvider(BaseProvider):
                     f"Traceback: {frappe.get_traceback()}"
                 )
             )
-            
-            return PublishResult(success=False, error_message=error_msg)
 
+            return PublishResult(success=False, error_message=error_msg)
+    
     def create_creative(self, payload: Dict, page_access_token: str = None) -> PublishResult:
         """Create Meta ad creative
         

@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:{account_name}-{platform}-{ad_account_id}",
+ "autoname": "format:Ad-{platform}-{ads_account_name}",
  "creation": "2026-01-03 11:19:54.606246",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -15,6 +15,7 @@
   "connection_status",
   "profile_image",
   "profile_section",
+  "ads_account_name",
   "ad_account_id",
   "account_type",
   "currency",
@@ -105,6 +106,7 @@
    "default": "INR",
    "fieldname": "currency",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Currency",
    "options": "Currency",
    "read_only": 1
@@ -349,6 +351,12 @@
    "fieldtype": "Data",
    "label": "Ads ID",
    "read_only": 1
+  },
+  {
+   "fieldname": "ads_account_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Ads Account Name"
   }
  ],
  "grid_page_length": 50,
@@ -359,7 +367,7 @@
    "link_fieldname": "ads_account"
   }
  ],
- "modified": "2026-01-12 13:40:17.605579",
+ "modified": "2026-01-29 13:19:36.470916",
  "modified_by": "Administrator",
  "module": "Ads Manager",
  "name": "Ads Account Integration",
@@ -384,6 +392,6 @@
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
- "title_field": "account_name",
+ "title_field": "ads_account_name",
  "track_changes": 1
 }

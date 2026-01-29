@@ -22,6 +22,8 @@ class PublishResult:
     adset_id: Optional[str] = None
     ad_id: Optional[str] = None
     creative_id: Optional[str] = None
+    image_url: Optional[str] = None
+    image_hash: Optional[str] = None
 
 
 @dataclass

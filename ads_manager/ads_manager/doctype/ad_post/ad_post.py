@@ -100,7 +100,7 @@ class AdPost(Document):
             for page in integration.get("fb_pages", []):
                 if page.page_id == page_id:
                     # Try to get the password field value
-                    stored_token = page.get("access_token")
+                    stored_token = page.get("page_access_token")
                     if stored_token:
                         logger.info(f"✓ Using stored page access token for page {page_id}")
                         return stored_token
@@ -190,7 +190,8 @@ class AdPost(Document):
             media_row = self.media[0]
             
             # Step 1: Upload media
-            image_hash = self._upload_media(provider, media_row)
+            # image_hash = self._upload_media(provider, media_row)
+            image_url = self._upload_media(provider, media_row)
             
             # Update media row with upload details immediately
             frappe.db.set_value(
@@ -198,13 +199,14 @@ class AdPost(Document):
                 media_row.name,
                 {
                     'media_hash': media_row.media_hash,
+                    'image_url': media_row.image_url,
                     'uploaded_to_platform': media_row.uploaded_to_platform,
                     'file_size': media_row.file_size
                 }
             )
             
             # Step 2: Create creative
-            creative_payload, page_access_token = self._build_creative_payload(creative_row, image_hash)
+            creative_payload, page_access_token = self._build_creative_payload(creative_row, image_url)
             creative_result = provider.create_creative(creative_payload, page_access_token)
             
             if not creative_result.success:
@@ -228,7 +230,7 @@ class AdPost(Document):
             ad_result = provider.create_ad(ad_payload)
             
             if ad_result.success:
-                self.ad_id = ad_result.campaign_id  # campaign_id field is used for ad_id
+                self.ad_id = ad_result.ad_id  # campaign_id field is used for ad_id
                 
                 # Save ad_id and status to database immediately
                 frappe.db.set_value(
@@ -265,111 +267,117 @@ class AdPost(Document):
             frappe.throw(_("Failed to create ad on Meta: {0}").format(error_msg))
     
     def _upload_media(self, provider, media_row):
-        """Upload media file to Meta and return hash"""
+        """Upload media file to Meta and return URL"""
         if not media_row.media_file:
             frappe.throw(_("Media file is required"))
-        
+
         try:
             # Get file document
             file_doc = frappe.get_doc("File", {"file_url": media_row.media_file})
             file_path = file_doc.get_full_path()
-            
+
             # Validate file exists
             if not os.path.exists(file_path):
                 frappe.throw(_("File not found on server: {0}").format(media_row.media_file))
-            
+
             # Validate file size (10MB limit for images)
             file_size = os.path.getsize(file_path)
             max_size = 10 * 1024 * 1024  # 10MB
-            
+
             if file_size > max_size:
                 frappe.throw(_("File size exceeds 10MB limit"))
-            
+
             # Prepare upload payload
             upload_payload = {
                 "filename": file_path,
                 "media_type": media_row.media_type or "Image"
             }
-            
+
             # Upload to Meta
             result = provider.upload_image(upload_payload)
-            
+
             if not result.success:
                 raise Exception(f"Media upload failed: {result.error_message}")
-            
-            # Update media row with upload details
-            image_hash = result.campaign_id  # campaign_id field is used for image_hash
-            media_row.media_hash = image_hash
+
+            # Update media row with upload details - now stores URL instead of hash
+            image_url = result.image_url  # campaign_id field contains the image URL
+            media_row.image_url = image_url  # Store in image_url field
             media_row.uploaded_to_platform = 1
             media_row.file_size = file_size
-            
-            logger.info(f"✓ Media uploaded successfully: {image_hash}")
-            
-            return image_hash
-        
+            media_row.media_hash = result.image_hash 
+
+            logger.info(f"✅ Media uploaded successfully: {image_url}")
+
+            return image_url  # Return URL instead of hash
+
         except Exception as e:
             logger.error(f"Media upload failed: {str(e)}")
             frappe.throw(_("Failed to upload media: {0}").format(str(e)))
-    
-    def _build_creative_payload(self, creative_row, image_hash):
+
+    def _build_creative_payload(self, creative_row, image_url):
         """Build creative payload for Meta API"""
         # Extract page_id from selected page label
         page_id = self._extract_page_id_from_label(self.select_facebook_page)
-        
+
         if not page_id:
             frappe.throw(_("Invalid Facebook Page selection"))
-        
+
         # Validate required fields for creative
         if not creative_row.link_url:
             frappe.throw(_("Link URL is required in Ad Creative"))
-        
+
         # Get page access token
         page_access_token = self._get_page_access_token(page_id)
-        
+
         # Build link_data object - only include non-empty fields
         link_data = {
             "link": creative_row.link_url
         }
-        
+
         # Add message if provided
         if creative_row.body:
             link_data["message"] = creative_row.body
-        
+
         # Add name/title if provided
         if creative_row.title:
             link_data["name"] = creative_row.title
-        
+
+        # Add description if provided
+        if hasattr(creative_row, 'description') and creative_row.description:
+            link_data["description"] = creative_row.description
+
+        # Add caption if provided
+        if hasattr(creative_row, 'caption') and creative_row.caption:
+            link_data["caption"] = creative_row.caption
+
         # Add call to action if provided
         if creative_row.call_to_action:
             cta_type = creative_row.call_to_action.upper().replace(" ", "_")
             link_data["call_to_action"] = {
-                "type": cta_type,
-                "value": {
-                    "link": creative_row.link_url
-                }
+                "type": cta_type
             }
-        
-        # Add image hash
-        link_data["image_hash"] = image_hash
-        
+
+        # Add image URL (not hash)
+        link_data["picture"] = image_url
+
         # Build object_story_spec with proper structure
         object_story_spec = {
             "page_id": page_id,
             "link_data": link_data
         }
-        
+
         # Build final payload
         payload = {
             "name": creative_row.creative_name.strip()[:100],
             "object_story_spec": object_story_spec
         }
-        
+
         # Log payload for debugging (without sensitive data)
         logger.info(f"Creative payload (page_id: {page_id}, has_page_token: {bool(page_access_token)})")
         logger.debug(f"Payload details: {json.dumps({k: v for k, v in payload.items() if k != 'access_token'}, indent=2)}")
-        
+
         return payload, page_access_token
-    
+
     def _build_ad_payload(self, ad_set_doc, creative_id):
         """Build ad payload for Meta API"""
         payload = {

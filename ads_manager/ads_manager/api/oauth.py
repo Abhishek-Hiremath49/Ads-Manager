@@ -360,7 +360,8 @@ def _connect_ad_account(session_key: str, index: int):
     # Save integration
     integration = _save_ads_integration(
         platform=platform,
-        account_name=cache_data.get("account_name") or acct.get("name"),
+        account_name=cache_data.get("account_name"),
+        ads_account_name=acct.get("name"),
         account_description=cache_data.get("account_description"),
         organization=cache_data.get("organization"),
         account_status=acct.get("account_status"),
@@ -378,9 +379,6 @@ def _connect_ad_account(session_key: str, index: int):
         pages_data=cache_data.get("pages", []),  # Pass pages with tokens
     )
 
-    # Clean up session cache
-    frappe.cache().delete_value(f"meta_ads_{session_key}")
-
     return integration
 
 
@@ -389,6 +387,7 @@ def _save_ads_integration(
     ad_account_id: str,
     ad_id: str,
     account_name: str,
+    ads_account_name: str,
     access_token: str,
     expires_in: int = None,
     account_description: str = None,
@@ -423,6 +422,7 @@ def _save_ads_integration(
             integration.platform = platform
             integration.ad_account_id = ad_account_id
             integration.ad_id = ad_id
+            integration.ads_account_name = ads_account_name
             is_new = True
 
         # Update main fields
@@ -471,22 +471,14 @@ def _save_ads_integration(
                 page_id = page.get("id")
                 page_name = page.get("name")
                 page_access_token = page.get("access_token")  # CRITICAL: Get page token
-                fan_count = page.get("fan_count", 0)
-                
-                # Get picture URL
-                picture_url = page.get("picture", {}).get("data", {}).get("url")
-                if not picture_url:
-                    picture_url = f"https://graph.facebook.com/{page_id}/picture?type=square&height=100&width=100"
-                
+                                               
                 # Append page with its access token
                 integration.append(
                     "fb_pages",
                     {
                         "page_id": page_id,
                         "page_name": page_name,
-                        "access_token": page_access_token,  # STORE PAGE TOKEN!
-                        "fan_count": fan_count,
-                        "image": picture_url,
+                        "page_access_token": page_access_token,  # STORE PAGE TOKEN!
                     }
                 )
             
@@ -548,10 +540,14 @@ def test_connection(integration: str) -> dict:
     settings = frappe.get_single("Ads Setting")
     try:
         if doc.platform == "Facebook":
-            token = doc.get_password("page_access_token") or doc.get_password("access_token")
+            # Use the user's access token from the main document to test connection
+            token = doc.get_password("access_token")
+            if not token:
+                frappe.throw(_("Access token not found. Please reconnect the account."))
+            
             valid = (
                 requests.get(
-                    f"https://graph.facebook.com/{settings.meta_api_version or 'v21.0'}/me",
+                    f"https://graph.facebook.com/{settings.meta_api_version or 'v24.0'}/me",
                     params={"access_token": token},
                 ).status_code
                 == 200
@@ -572,6 +568,10 @@ def test_connection(integration: str) -> dict:
 # Redirect Helpers
 # =============================================================================
 
+@frappe.whitelist()
+def finalize_ad_account_connection(session_key: str):
+    frappe.cache().delete_value(f"meta_ads_{session_key}")
+    return {"status": "done"}
 
 def _oauth_error_redirect(message: str):
     """Redirect to error page"""

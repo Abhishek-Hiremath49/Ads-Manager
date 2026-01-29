@@ -179,15 +179,20 @@
 
             function connectNext() {
                 if (selected.length === 0) {
-                    let msg = `Connected ${success} ad account(s)`;
-                    if (errors > 0) msg += ` (${errors} failed/skipped)`;
+                        frappe.call({
+                        method: 'ads_manager.ads_manager.api.oauth.finalize_ad_account_connection',
+                        args: { session_key: sessionKey }
+                    });
+                
                     frappe.show_alert({
-                        message: msg,
+                        message: `Connected ${success} ad account(s)`,
                         indicator: 'green'
                     });
+                
                     setTimeout(() => {
                         window.location.href = '/app/ads-account-integration';
                     }, 1500);
+                
                     return;
                 }
 
